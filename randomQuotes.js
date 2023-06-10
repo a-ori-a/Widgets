@@ -7,21 +7,34 @@ var today = new Date()
 var fm = FileManager.local()
 var lastUpdatePath = fm.documentsDirectory() + '/lastUpdate.txt'
 var jsonPath = fm.documentsDirectory() + '/quotes.json'
+var apiKeyPath = fm.documentsDirectory() + 'apiKey.txt'
 var isUpdated = true
-var fm = new FileManager.local()
+var purpose = 'misc'
 
-if (!fm.fileExists(fm.documentsDirectory() + '/quoteAPI.txt')) {
-  var alert = new alert()
+
+if (config.runsInApp) {
+  var alert = new Alert()
+  alert.title = 'Would you like to reset API key?'
+  alert.addAction('Yes')
+  alert.addAction('No')
+  var r = await alert.present()
+  if (r == 0) {
+    purpose = 'updateAPI'
+  }
+}
+
+if (!fm.fileExists(apiKeyPath) || purpose == 'updateAPI') {
+  var alert = new Alert()
   alert.title = 'Enter API key'
   alert.addTextField('API key')
   alert.addAction('OK')
-  alert.addCancelAction('cancel')
+  alert.addCancelAction('Cancel')
   var r = await alert.present()
   if (r != -1) { // when api key entered
     if (alert.textFieldValue(0).length == 32) {  // valid api key
-      fm.writeString(fm.documentsDirectory + '/quoteAPI.txt', alert.textFieldValue(0))
+      fm.writeString(apiKeyPath, alert.textFieldValue(0))
     } else {
-      alert = new alert()
+      alert = new Alert()
       alert.title = 'Invalid API key\n try again or get API key by yourself'
       alert.addCancelAction()
       alert.present()

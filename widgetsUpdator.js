@@ -2,7 +2,7 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: teal; icon-glyph: magic;
 const rawFiles = ["dayCounter.js", "daysLeft.js", "randomQuotes.js","widgetsUpdator.js"]
-var fm = new FileManager()
+var fm = FileManager.iCloud()
 var root = fm.documentsDirectory()+'/'
 
 for (var file of rawFiles) {
