@@ -12,9 +12,9 @@ var split = parameter.split('.')
 var event = split[0]
 var goal = new Date(split[1]).getTime()
 var now = new Date().getTime()
-var diffDate = Math.ceil((goal - now)/(1000 * 3600 * 24))
+var diffDate = Math.ceil((goal - now) / (1000 * 3600 * 24))
 if (split.length == 4) {
-	var bgColor = split[2]
+  var bgColor = split[2]
   var fgColor = split[3]
 } else {
   var fgColor = 'dfdfdf'
@@ -36,7 +36,7 @@ var youhave = widget.addText('You have')
 youhave.textColor = new Color(fgColor)
 youhave.font = Font.systemFont(12)
 
-var days = widget.addText(''+diffDate)
+var days = widget.addText('' + diffDate)
 days.centerAlignText()
 days.textColor = new Color(fgColor)
 days.font = Font.systemFont(50)

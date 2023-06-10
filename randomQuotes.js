@@ -5,12 +5,12 @@
 var widget = new ListWidget()
 var today = new Date()
 var fm = FileManager.local()
-var lastUpdatePath = fm.documentsDirectory()+'/lastUpdate.txt'
-var jsonPath = fm.documentsDirectory()+'/quotes.json'
-var isUpdated =true
+var lastUpdatePath = fm.documentsDirectory() + '/lastUpdate.txt'
+var jsonPath = fm.documentsDirectory() + '/quotes.json'
+var isUpdated = true
 var fm = new FileManager.local()
 
-if (!fm.fileExists(fm.documentsDirectory()+'/quoteAPI.txt')) {
+if (!fm.fileExists(fm.documentsDirectory() + '/quoteAPI.txt')) {
   var alert = new alert()
   alert.title = 'Enter API key'
   alert.addTextField('API key')
@@ -19,7 +19,7 @@ if (!fm.fileExists(fm.documentsDirectory()+'/quoteAPI.txt')) {
   var r = await alert.present()
   if (r != -1) { // when api key entered
     if (alert.textFieldValue(0).length == 32) {  // valid api key
-      fm.writeString(fm.documentsDirectory+'/quoteAPI.txt', alert.textFieldValue(0))
+      fm.writeString(fm.documentsDirectory + '/quoteAPI.txt', alert.textFieldValue(0))
     } else {
       alert = new alert()
       alert.title = 'Invalid API key\n try again or get API key by yourself'
@@ -28,7 +28,7 @@ if (!fm.fileExists(fm.documentsDirectory()+'/quoteAPI.txt')) {
     }
   }
 } else {
-  var key = fm.readString(fm.documentsDirectory+'/quoteAPI.txt')
+  var key = fm.readString(fm.documentsDirectory + '/quoteAPI.txt')
 }
 
 
@@ -41,20 +41,20 @@ if (!fm.fileExists(lastUpdatePath)) {  // check whether this widget has run befo
 if (isUpdated == false) { // when it is not updated or hasn't run before
   var rq = new Request("https://favqs.com/api/quotes")
   rq.headers = {
-    "Authorization": "Token token="+key
+    "Authorization": "Token token=" + key
   }
   rq = await rq.loadString()
   var json = JSON.parse(rq)
   fm.writeString(lastUpdatePath, String(today.getDate()))
   fm.writeString(jsonPath, rq)
 } else {
-  var json =JSON.parse(fm.readString(jsonPath))  // read from cache
+  var json = JSON.parse(fm.readString(jsonPath))  // read from cache
 }
 if (args.widgetParameter == 'light') {
   var fontColor = '232323'
   var bgColor = 'efefef'
 } else if (args.widgetParameter == 'dark') {
-	var fontColor = 'efefef'
+  var fontColor = 'efefef'
   var bgColor = '232323'
 } else {
   var fontColor = '232323'
@@ -65,7 +65,7 @@ json = json.quotes
 
 // configure font size
 if (config.runsInAccessoryWidget) {
-  var maxLength = 70 
+  var maxLength = 70
   var size = 12
   var name = false
 } else {
@@ -77,23 +77,23 @@ if (config.runsInAccessoryWidget) {
 // choose which quote to show (length-based judgement)
 var info = ""
 while (info == "" || info.body.length >= maxLength || info.body.length <= 20) {
-  info = json[Math.floor(Math.random()*(json.length-1))]
+  info = json[Math.floor(Math.random() * (json.length - 1))]
 }
 
 // construct widget
 var quote = widget.addText(info.body)
-quote.font = new Font("Futura-MediumItalic",size)
+quote.font = new Font("Futura-MediumItalic", size)
 quote.minimumScaleFactor = 0
 
 if (name) {
   var author = widget.addText(info.author)
-  author.font = new Font("Futura-Medium", size-7)
+  author.font = new Font("Futura-Medium", size - 7)
   author.rightAlignText()
   author.textColor = new Color(fontColor)
 }
 if (!config.runsInAccessoryWidget) {
-	quote.textColor = new Color(fontColor)
-	widget.backgroundColor = new Color(bgColor)
+  quote.textColor = new Color(fontColor)
+  widget.backgroundColor = new Color(bgColor)
 }
 
 Script.setWidget(widget)
