@@ -23,7 +23,7 @@ if (config.runsInApp) {
   }
 }
 
-if (!fm.fileExists(apiKeyPath) || purpose == 'updateAPI') {
+if ((!fm.fileExists(apiKeyPath)) || purpose == 'updateAPI') {
   var alert = new Alert()
   alert.title = 'Enter API key'
   alert.addTextField('API key')
@@ -41,7 +41,7 @@ if (!fm.fileExists(apiKeyPath) || purpose == 'updateAPI') {
     }
   }
 } else {
-  var key = fm.readString(fm.documentsDirectory + '/quoteAPI.txt')
+  var key = fm.readString(apiKeyPath)
 }
 
 
