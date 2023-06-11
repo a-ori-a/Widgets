@@ -144,11 +144,17 @@ async function command(cmd) {
         result = ["_E_"+e.message]
         break
       }
+      result = []
       icld.writeString(icld.documentsDirectory()+"/"+parameter[0]+".js", script)
-      result = ["install complete"]
+      if (icld.fileExists(icld.documentsDirectory()+"/"+parameter[0]+".js")) {
+        result.append(`File ${parameter[0]} exists, updating`)
+      } else {
+        result.append("Downloading script")
+      }
+      result.append("install complete")
       break
     default:
-      result = [`_E_Command "${cmd[0]}"" not found`]
+      result.append(`_E_Command "${cmd[0]}"" not found`)
   }
   return result
 }
