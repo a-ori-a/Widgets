@@ -1,6 +1,3 @@
-// Variables used by Scriptable.
-// These must be at the very top of the file. Do not edit.
-// icon-color: deep-green; icon-glyph: magic;
 // variables declaration
 var today = new Date()
 var fm = FileManager.local()
@@ -23,16 +20,6 @@ if (config.runsInApp) {
 }
 
 // config variables
-if (args.widgetParameter == 'light') {
-  var fontColor = '232323'
-  var bgColor = 'efefef'
-} else if (args.widgetParameter == 'dark') {
-  var fontColor = 'efefef'
-  var bgColor = '232323'
-} else {
-  var fontColor = '232323'
-  var bgColor = 'efefef'
-}
 if (config.runsInAccessoryWidget) {
   var maxLength = 70
   var size = 12
@@ -77,7 +64,7 @@ if (!fm.fileExists(lastUpdatePath)) {  // check whether this widget has run befo
 } else {  // widget has not updated today
   isUpdated = fm.readString(lastUpdatePath) == today.getDate()
 }
-
+console.log(isUpdated)
 try {
   var json = await getQuotes()
   chooseQuote()
@@ -135,12 +122,8 @@ if (name) {
   var author = widget.addText(info.author)
   author.font = new Font("Futura-Medium", size - 7)
   author.rightAlignText()
-  author.textColor = new Color(fontColor)
 }
-if (!config.runsInAccessoryWidget) {
-  quote.textColor = new Color(fontColor)
-  widget.backgroundColor = new Color(bgColor)
-}
+
 
 Script.setWidget(widget)
 widget.presentMedium()
