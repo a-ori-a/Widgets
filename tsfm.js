@@ -134,7 +134,8 @@ async function command(cmd) {
         "tsfm" : "https://raw.githubusercontent.com/a-ori-a/Widgets/master/tsfm.js",
         "calendar" : "https://raw.githubusercontent.com/cy-1818/Scriptable_Scripts/main/Calendar/calendar.js",
         "randomQuotes" : "https://raw.githubusercontent.com/a-ori-a/Widgets/master/randomQuotes.js",
-        "dayCounter" : "https://raw.githubusercontent.com/a-ori-a/Widgets/master/dayCounter.js"
+        "dayCounter" : "https://raw.githubusercontent.com/a-ori-a/Widgets/master/dayCounter.js",
+        "tsfm-ex" : "https://raw.githubusercontent.com/cy-1818/Scriptable_Scripts/main/tsfm-ex/tsfm-ex.js"
       }
       var icld = FileManager.iCloud()
       var rq = new Request(availables[parameter[0]])
