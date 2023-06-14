@@ -1,6 +1,3 @@
-// Variables used by Scriptable.
-// These must be at the very top of the file. Do not edit.
-// icon-color: yellow; icon-glyph: font;
 // variables declaration
 var today = new Date()
 var fm = FileManager.local()
@@ -73,7 +70,6 @@ if (!fm.fileExists(lastUpdatePath)) {
     isUpdated = fm.readString(lastUpdatePath) == today.getDate()
 }
 
-isUpdated = false
 try {
     var json = await getQuotes()
     chooseQuote()
