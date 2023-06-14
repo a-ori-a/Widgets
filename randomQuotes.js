@@ -1,3 +1,6 @@
+// Variables used by Scriptable.
+// These must be at the very top of the file. Do not edit.
+// icon-color: yellow; icon-glyph: sort-alpha-down;
 // variables declaration
 var today = new Date()
 var fm = FileManager.local()
