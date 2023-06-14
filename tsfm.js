@@ -1,10 +1,8 @@
-// Variables used by Scriptable.
-// These must be at the very top of the file. Do not edit.
-// icon-color: deep-green; icon-glyph: terminal;
 var ui = new UITable()
 ui.showSeparators = 0
 var fm = FileManager.local()
 var dd = fm.documentsDirectory().split("/").slice(0, -1).join("/")+"/"
+console.log(dd)
 var cd = fm.documentsDirectory()
 var lastCommand = ''
 var inputField
@@ -13,7 +11,7 @@ var inputField
 function createPrompt() {
     var row = new UITableRow()
     row.height = 25
-    var cell = UITableCell.text(`[${Device.model()}@${Device.systemName()}  ${cd} ] $`)
+    var cell = UITableCell.text(`[${Device.model()}@${Device.systemName()}  LOCAL/${cd.split(dd)[1]} ] $`)
     cell.titleColor = new Color('#12abef')
     row.addCell(cell)
     row.dismissOnSelect = 0
