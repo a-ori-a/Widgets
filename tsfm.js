@@ -40,7 +40,7 @@ async function draw(table, contents) {
     table.removeRow(inputField)
     var row = new UITableRow()
     row.height = 25
-    var cell = UITableCell.text(`[${Device.model()}@${Device.systemName()}  ${cd} $ ${lastCommand}`)
+    var cell = UITableCell.text(`[${Device.model()}@${Device.systemName()}  LOCAL/${cd.split(dd)[1]} ] $ ${lastCommand}`)
     cell.titleColor = new Color('#12abef')
     row.addCell(cell)
     table.addRow(row)
