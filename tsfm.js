@@ -1,8 +1,10 @@
+// Variables used by Scriptable.
+// These must be at the very top of the file. Do not edit.
+// icon-color: deep-green; icon-glyph: terminal;
 var ui = new UITable()
 ui.showSeparators = 0
 var fm = FileManager.local()
 var dd = fm.documentsDirectory().split("/").slice(0, -1).join("/")+"/"
-console.log(dd)
 var cd = fm.documentsDirectory()
 var lastCommand = ''
 var inputField
@@ -44,7 +46,6 @@ async function draw(table, contents) {
     cell.titleColor = new Color('#12abef')
     row.addCell(cell)
     table.addRow(row)
-
     for (var content of contents) {
         row = new UITableRow()
         row.height = 25
@@ -65,6 +66,10 @@ async function draw(table, contents) {
         }
         row.addCell(cell)
         table.addRow(row)
+    }
+    ui.reload()
+    if (contents[0] == "clear") {
+        table.removeAllRows()
     }
     createPrompt()
     ui.reload()
@@ -151,6 +156,9 @@ async function command(cmd) {
                 result.push("Downloading script")
             }
             result.push("install complete")
+            break
+        case "clear":
+            result.push("clear")
             break
         default:
             result.push(`_E_Command "${cmd[0]}" not found`)
