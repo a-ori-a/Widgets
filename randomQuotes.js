@@ -1,3 +1,6 @@
+// Variables used by Scriptable.
+// These must be at the very top of the file. Do not edit.
+// icon-color: yellow; icon-glyph: font;
 // variables declaration
 var today = new Date()
 var fm = FileManager.local()
@@ -59,6 +62,7 @@ if ((!fm.fileExists(apiKeyPath)) || purpose == 'updateAPI') {
 } else {
     var key = fm.readString(apiKeyPath)
 }
+console.log(key)
 
 // decide whether to load from local
 if (!fm.fileExists(lastUpdatePath)) {
@@ -68,15 +72,22 @@ if (!fm.fileExists(lastUpdatePath)) {
     // widget has not updated today
     isUpdated = fm.readString(lastUpdatePath) == today.getDate()
 }
-console.log(isUpdated)
+
+isUpdated = false
 try {
     var json = await getQuotes()
     chooseQuote()
 } catch (e) {
-    if (e.message = 'Invalid Access Token') {
+    console.log(e)
+    if (e.message == 'Invalid Access Token') {
         info = {
             'body': 'invalid access token (API key)',
             'author': 'run this script from app'
+        }
+    } else if (e.message == 'Server is down') {
+        info = {
+            'body' : 'Sorry, the server is down',
+            'author' : 'try again later'
         }
     } else {
         isUpdated = true
@@ -93,9 +104,16 @@ async function getQuotes() {
             "Authorization": "Token token=" + key
         }
         rq = await rq.loadString() // use loadString as string data is required later
+        console.log(rq)
         if (rq == `HTTP Token: Access denied.
             `) {
             throw new Error('Invalid Access Token')
+        } else if (rq == `<html><body><h1>503 Service Unavailable</h1>
+No server is available to handle this request.
+</body></html>
+
+`) {
+            throw new Error('Server is down')
         }
         var json = JSON.parse(rq)
         fm.writeString(lastUpdatePath, String(today.getDate()))
