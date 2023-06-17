@@ -8,7 +8,7 @@ Widgets for iOS and iPad OS using Scriptable
 2. Scriptableを開き新しいプロジェクトを作ります。
 3. 下のコードをプロジェクトにコピペします。
 ```javascript
-fm = new FileManager.iCloud();
+fm = FileManager.iCloud();
 var rq = new Request("https://raw.githubusercontent.com/a-ori-a/Widgets/master/widgetsUpdator.js");
 fm.writeString(fm.documentsDirectory()+"/widgetsUpodator.js", await rq.loadString());
 ``` 
