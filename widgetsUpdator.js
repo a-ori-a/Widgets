@@ -1,25 +1,29 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
 // icon-color: teal; icon-glyph: magic;
-const rawFiles = ["dayCounter.js", "daysLeft.js", "randomQuotes.js","widgetsUpdator.js", "tsfm.js"]
+const rawFiles = ["dayCounter.js", "daysLeft.js", "randomQuotes.js", "widgetsUpdator.js", "tsfm.js"]
 var fm = FileManager.iCloud()
-var root = fm.documentsDirectory()+'/'
+var root = fm.documentsDirectory() + '/'
 var anyUpdate = false
 
 for (var file of rawFiles) {
   var rq = new Request("https://raw.githubusercontent.com/a-ori-a/Widgets/master/" + file)
   var rawCode = await rq.loadString()
-  if (fm.readString(root+file) != rawCode) {
-    alt = new Alert()
-    alt.addAction("Update")
-    alt.addCancelAction("Don't update plz")
-    alt.title = "Update found in " + file
-    var update = await alt.present()
-    if (update == -1) {
-    } else {
-      anyUpdate = true
-      fm.writeString(root+file, rawCode)  // overwrite existing code with (maybe) new one
+  if (fm.fileExists(root + file)) {
+    if (fm.readString(root + file) != rawCode) {
+      alt = new Alert()
+      alt.addAction("Update")
+      alt.addCancelAction("Don't update plz")
+      alt.title = "Update found in " + file
+      var update = await alt.present()
+      if (update == -1) {
+      } else {
+        anyUpdate = true
+        fm.writeString(root + file, rawCode)  // overwrite existing code with (maybe) new one
+      }
     }
+  } else {
+    fm.writeString(root + file, rawCode)
   }
 }
 
