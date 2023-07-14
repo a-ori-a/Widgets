@@ -124,6 +124,9 @@ function getInfo() {
 function createImage() {  // generate code to create image
   getInfo()
   now = count = 0
+  if (log.length != 0) {
+    log.sort( compare )
+  }
   for (var subj of log) {
     code += "\n" + circle(400, 2*Math.PI*now/info.total, 2*Math.PI*(now+subj.time)/info.total, 'no color', subj.name)
     count ++
@@ -135,6 +138,16 @@ function createImage() {  // generate code to create image
   c.font="80px futura"
   c.fillText("${Math.floor(info.total_int/60)} Hrs", w/2-c.measureText("${Math.floor(info.total_int/60)} Hrs").width/2, h/2-10)
   c.fillText("${info.total_int - 60*Math.floor(info.total/60)} min", w/2-c.measureText("${info.total_int - 60*Math.floor(info.total/60)} min").width/2, h/2+70)`
+}
+
+function compare(a, b) {
+  var r = 0
+  if (a.time < b.time) {
+    r = 1
+  } else if (a.time > b.time) {
+    r = -1
+  }
+  return r
 }
 
 function createScreen() {
