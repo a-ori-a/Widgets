@@ -18,8 +18,12 @@ var today = new Date()
 const fileName = `/${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.json`
 const doc = fm.documentsDirectory() + "/wultidly"
 const colors = ["#012345", "#234567", "#456789", "#6789ab", "#89abcd"]
-const widgetFamily = config.widgetFamily
-const widgetParameter = args.widgetParameter
+var widgetFamily = config.widgetFamily
+var widgetParameter = args.widgetParameter
+if (config.runsInApp) {
+  var widgetFamily = "medium"
+  var widgetParameter = "record"
+}
 record = ["", "", 0, 0]
 
 // main code
@@ -30,16 +34,9 @@ if (config.runsInApp) {
 }
 
 if (widgetFamily == 'small') {
-  if (widgetParameter == 'test') {
-  } else if (widgetParameter == 'breakdown') {
-    getInfo()
-    await createSimpleBreakdown('small')
-    widget.presentSmall()
-  } else {
-    getInfo()
-    await createSquareWidget()
-    widget.presentSmall()
-  }
+  getInfo()
+  await createSmallWidget(widgetParameter)
+  widget.presentSmall()
 } else if (widgetFamily == "large") {
   if (widgetParameter == 'test') {
 
@@ -50,7 +47,7 @@ if (widgetFamily == 'small') {
   }
 } else if (widgetFamily == "medium" || widgetFamily == "extraLarge" || config.runsInApp) {
   getInfo()
-  await createMediumWidget()
+  await createMediumWidget(widgetParameter)
   widget.presentMedium()
 }
 Script.setWidget(widget)
@@ -65,31 +62,111 @@ async function createSquareWidget() {
   body.addSpacer()
 }
 
-async function createMediumWidget() {
-  widget.backgroundColor = new Color('#fefffd')
-  createImage()
-  var container = widget.addStack()
-  container.addSpacer()  // left space
-  var pie = container.addImage(await getImage())
-  container.addSpacer()  // mid space
-  var description = container.addStack()
-  container.addSpacer()  // right space
-  description.addSpacer()
-  description.layoutVertically()
-  for (var subj of log) {
-    var text = description.addText(`${subj.name} : ${subj.hours} H ${subj.minutes} M`)
-    text.font = new Font('mono', 10)
-    text.textColor = new Color('182929')
-  }
-  description.addSpacer()
-}
-
-function createSimpleBreakdown(size) {
-  if (size == 'small') {
+async function createSmallWidget(type) {
+  if (type === null) {
+    widget.backgroundColor = new Color("#fefffd")
+    createImage()
+    body = widget.addStack()
+    body.addSpacer()
+    body.addImage(await getImage()).applyFillingContentMode()
+    body.addSpacer()
+  } else if (type == 'breakdown') {
+    var count = 0
     for (var subj of log) {
       var text = `${subj.name} : ${subj.hours} H ${subj.minutes} M`
-      widget.addText(text).font = new Font("mono", 13)
+      var text = widget.addText(text)
+      text.font = new Font("mono", 13)
+      switch (count) {
+        case 0:
+          text.textColor = Color.yellow()
+          break
+        case 1:
+          text.textColor = Color.gray()
+          break
+        case 2:
+          text.textColor = Color.brown()
+          break
+        default:
+          break
+      }
+      count++
     }
+  } else {
+    widget.addText(type)
+    console.log("fail")
+  }
+}
+
+async function createMediumWidget(type) {
+  if (type === null || type == 'breakdown') {
+    widget.backgroundColor = new Color('#fefffd')
+    createImage()
+    var container = widget.addStack()
+    container.addSpacer()  // left space
+    var pie = container.addImage(await getImage())
+    container.addSpacer(40)  // mid space
+    var description = container.addStack()
+    description.size = new Size(100,100)
+    container.addSpacer()  // right space
+    description.addSpacer()
+    description.layoutVertically()
+    var count = 0
+    for (var subj of log) {
+      var text = `${subj.name} : ${subj.hours} H ${subj.minutes} M`
+      var text = description.addText(text)
+      text.font = new Font("mono", 13)
+      switch (count) {
+        case 0:
+          text.textColor = Color.yellow()
+          break
+        case 1:
+          text.textColor = Color.gray()
+          break
+        case 2:
+          text.textColor = Color.brown()
+          break
+        default:
+          break
+      }
+      count++
+    }
+    description.addSpacer()
+  } else if (type == 'record') {
+    console.log("record")
+    widget.backgroundColor = new Color('#fefffd')
+    createImage()
+    var container = widget.addStack()
+    container.addSpacer()  // left space
+    var pie = container.addImage(await getImage())
+    container.addSpacer(40)  // mid space
+    var buttonContainer = container.addStack()
+    container.addSpacer()  // right spacer
+    buttonContainer.layoutVertically()
+    buttonContainer.addSpacer()  // top spacer
+    var button = buttonContainer.addStack()
+    button.layoutVertically()
+    buttonContainer.addSpacer()  // bottom spacer
+    button.size = new Size(100, 100)
+    button.backgroundColor = new Color('dfdfdf')
+    button.cornerRadius = 10
+    button.url = 'scriptable:///run/wultidly'
+    button.addSpacer()  // top spacer of the text
+
+    var recordContainer = button.addStack()
+    recordContainer.addSpacer()
+    var text = recordContainer.addText('Record')
+    text.font = new Font('futura', 13)
+    recordContainer.addSpacer()
+
+    var studyTimeContainer = button.addStack()
+    studyTimeContainer.addSpacer()
+    var text = studyTimeContainer.addText('Study Time')
+    text.font = new Font('futura', 13)
+    studyTimeContainer.addSpacer()
+
+    button.addSpacer()  // bottom spacer of the text
+  } else {
+    console.log(type)
   }
 }
 
@@ -181,7 +258,7 @@ function compare(a, b) {
 function moveTo(array, from, direction) {
   if (direction == -1 && from == 0) {
     return array
-  } else if (direction == 1 && from == array.length-1) {
+  } else if (direction == 1 && from == array.length - 1) {
     return array
   }
   var value = array[from]
@@ -199,7 +276,6 @@ function createScreen(loadFiles = false) {
   } else {
     var setSubjects = JSON.parse(fm.readString(setSubjectsPath))
   }
-  console.log(setSubjects)
   ui.removeAllRows()
   var AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
   var title = new UITableRow()
@@ -253,8 +329,6 @@ function createScreen(loadFiles = false) {
       fm.writeString(setSubjectsPath, JSON.stringify(setSubjects))
       createScreen()`
       down.onTap = new Function(down.code)
-
-      console.log(count)
       count++
 
       if (record[0] == i) { sbj.backgroundColor = Color.yellow() }
