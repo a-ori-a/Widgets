@@ -104,9 +104,9 @@ async function createMediumWidget(type) {
     var container = widget.addStack()
     container.addSpacer()  // left space
     var pie = container.addImage(await getImage())
-    container.addSpacer(40)  // mid space
+    container.addSpacer(20)  // mid space
     var description = container.addStack()
-    description.size = new Size(100,100)
+    description.size = new Size(140,100)
     container.addSpacer()  // right space
     description.addSpacer()
     description.layoutVertically()
@@ -491,5 +491,3 @@ function createScreen(loadFiles = false) {
   }
   ui.reload()
 }
-
-Pasteboard.copyString(code)
