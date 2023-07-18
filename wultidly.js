@@ -25,6 +25,90 @@ if (config.runsInApp) {
   var widgetParameter = "record"
 }
 record = ["", "", 0, 0]
+const modules = {
+  pieChart: async (stack) => {
+    createImage()
+    body = stack.addStack()
+    body.addSpacer()
+    body.addImage(await getImage()).applyFillingContentMode()
+    body.addSpacer()
+    return stack
+  },
+  breakdown: async (stack) => {
+    try {
+      stack.layoutVertically()
+    } catch {}
+    stack.addSpacer()
+    var count = 0
+    for (var subj of log) {
+      var text = `${subj.name} : ${subj.hours} H ${subj.minutes} M`
+      var text = stack.addText(text)
+      text.font = new Font("mono", 13)
+      switch (count) {
+        case 0:
+          text.textColor = Color.yellow()
+          break
+        case 1:
+          text.textColor = Color.gray()
+          break
+        case 2:
+          text.textColor = Color.brown()
+          break
+        default:
+          break
+      }
+      count++
+    }
+    stack.addSpacer()
+  },
+  recordButton: async (stack) => {
+    stack.addSpacer() // left spacer
+    var buttonContainer = stack.addStack()
+    stack.addSpacer()  // right spacer
+    buttonContainer.layoutVertically()
+    buttonContainer.addSpacer()  // top spacer
+    var button = buttonContainer.addStack()
+    button.layoutVertically()
+    buttonContainer.addSpacer()  // bottom spacer
+    button.size = new Size(100, 100)
+    button.backgroundColor = new Color('dfdfdf')
+    button.cornerRadius = 10
+    button.url = 'scriptable:///run/wultidly'
+    button.addSpacer()  // top spacer of the text
+
+    var recordContainer = button.addStack()
+    recordContainer.addSpacer()
+    var text = recordContainer.addText('Record')
+    text.font = new Font('futura', 13)
+    recordContainer.addSpacer()
+
+    var studyTimeContainer = button.addStack()
+    studyTimeContainer.addSpacer()
+    var text = studyTimeContainer.addText('Study Time')
+    text.font = new Font('futura', 13)
+    studyTimeContainer.addSpacer()
+
+    button.addSpacer()  // bottom spacer of the text
+  },
+  calender: async (stack) => {
+    try {
+      stack.layoutVertically()
+    } catch {}
+    stack.addSpacer()
+    var horizontal = stack.addStack()
+    stack.addSpacer()
+    horizontal.addSpacer()
+    var today = new Date()
+    var text = `${today.getMonth()+1} / ${today.getDate()}`
+    var text = horizontal.addText(text)
+    text.font = new Font("futura", 40)
+    horizontal.addSpacer()
+    return stack
+  },
+  yesterday: async (stack) {
+    
+  }
+}
 
 // main code
 ui = new UITable()
@@ -55,42 +139,15 @@ Script.setWidget(widget)
 // useful functions
 async function createSquareWidget() {
   widget.backgroundColor = new Color("#fefffd")
-  createImage()
-  body = widget.addStack()
-  body.addSpacer()
-  body.addImage(await getImage()).applyFillingContentMode()
-  body.addSpacer()
+  modules.pieChart(widget)
 }
 
 async function createSmallWidget(type) {
   if (type === null) {
     widget.backgroundColor = new Color("#fefffd")
-    createImage()
-    body = widget.addStack()
-    body.addSpacer()
-    body.addImage(await getImage()).applyFillingContentMode()
-    body.addSpacer()
+    await modules.pieChart(widget)
   } else if (type == 'breakdown') {
-    var count = 0
-    for (var subj of log) {
-      var text = `${subj.name} : ${subj.hours} H ${subj.minutes} M`
-      var text = widget.addText(text)
-      text.font = new Font("mono", 13)
-      switch (count) {
-        case 0:
-          text.textColor = Color.yellow()
-          break
-        case 1:
-          text.textColor = Color.gray()
-          break
-        case 2:
-          text.textColor = Color.brown()
-          break
-        default:
-          break
-      }
-      count++
-    }
+    await modules.breakdown(widget)
   } else {
     widget.addText(type)
     console.log("fail")
@@ -106,65 +163,19 @@ async function createMediumWidget(type) {
     var pie = container.addImage(await getImage())
     container.addSpacer(20)  // mid space
     var description = container.addStack()
-    description.size = new Size(140,100)
     container.addSpacer()  // right space
-    description.addSpacer()
-    description.layoutVertically()
-    var count = 0
-    for (var subj of log) {
-      var text = `${subj.name} : ${subj.hours} H ${subj.minutes} M`
-      var text = description.addText(text)
-      text.font = new Font("mono", 13)
-      switch (count) {
-        case 0:
-          text.textColor = Color.yellow()
-          break
-        case 1:
-          text.textColor = Color.gray()
-          break
-        case 2:
-          text.textColor = Color.brown()
-          break
-        default:
-          break
-      }
-      count++
-    }
-    description.addSpacer()
+    description.size = new Size(140,100)
+    modules.calender(description)
   } else if (type == 'record') {
     console.log("record")
     widget.backgroundColor = new Color('#fefffd')
-    createImage()
+
     var container = widget.addStack()
     container.addSpacer()  // left space
-    var pie = container.addImage(await getImage())
+    await modules.pieChart(container)
     container.addSpacer(40)  // mid space
-    var buttonContainer = container.addStack()
-    container.addSpacer()  // right spacer
-    buttonContainer.layoutVertically()
-    buttonContainer.addSpacer()  // top spacer
-    var button = buttonContainer.addStack()
-    button.layoutVertically()
-    buttonContainer.addSpacer()  // bottom spacer
-    button.size = new Size(100, 100)
-    button.backgroundColor = new Color('dfdfdf')
-    button.cornerRadius = 10
-    button.url = 'scriptable:///run/wultidly'
-    button.addSpacer()  // top spacer of the text
-
-    var recordContainer = button.addStack()
-    recordContainer.addSpacer()
-    var text = recordContainer.addText('Record')
-    text.font = new Font('futura', 13)
-    recordContainer.addSpacer()
-
-    var studyTimeContainer = button.addStack()
-    studyTimeContainer.addSpacer()
-    var text = studyTimeContainer.addText('Study Time')
-    text.font = new Font('futura', 13)
-    studyTimeContainer.addSpacer()
-
-    button.addSpacer()  // bottom spacer of the text
+    var btn = container.addStack()
+    modules.recordButton(btn)
   } else {
     console.log(type)
   }
