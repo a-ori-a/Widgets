@@ -22,6 +22,22 @@ const maxClass = SatCheck ? 3:6
 const gradient = new LinearGradient()
 let padding = 2  // change this value to gain/reduce padding
 const days = ["", "A月", "A火", "A水", "A木", "A金", "A土", "", "B月", "B火", "B水", "B木", "B金", "B土"]
+const colorTheme = {
+  light: {
+    background: new Color('#fdf6e3'),
+    foreground: new Color('#657b83'),
+    subBackground: new Color('#eee8d5'),
+    subForeground: new Color('#93a1a1'),
+    accent: new Color('#268bd2')
+  },
+  dark: {
+    background: '#657b83',
+    foreground: '#fdf6e3',
+    subBackground: '#93a1a1',
+    subForeground: '#eee8d5',
+    accent: '#268bd2'
+  }
+}
 
 if (!fm.fileExists(dataDir)) {
   fm.createDirectory(dataDir)
@@ -596,3 +612,5 @@ else if (config.widgetFamily == 'medium')
   tmp.textColor = new Color(settings.theme.bg)
   tmp.font = new Font('Kailasa-Bold', 16)
 }
+Script.setWidget(list)
+Script.complete()
