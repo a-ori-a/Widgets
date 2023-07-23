@@ -1,40 +1,68 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
 // icon-color: orange; icon-glyph: stopwatch;
-code = `
-var canvas = document.querySelector("canvas");
-var w = 820;
-var h = 820;
-canvas.width = w;
-canvas.height = h;
-var c = canvas.getContext("2d");
-c.font = "50px Courier-Bold"
-c.lineWidth = 15
-c.strokeStyle = "#32de9d"
-`
+var code = ''
 var widget = new ListWidget()
 var fm = FileManager.local()
 var today = new Date()
-const fileName = `/${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.json`
+var fileName = `/${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.json`
 const doc = fm.documentsDirectory() + "/wultidly"
-const colors = ["#012345", "#234567", "#456789", "#6789ab", "#89abcd"]
+const colorTheme = {
+  light: {
+    background: new Color('#fdf6e3'),
+    foreground: new Color('#657b83'),
+    subBackground: new Color('#eee8d5'),
+    subForeground: new Color('#93a1a1'),
+    accent: new Color('#268bd2')
+  },
+  dark: {
+    background: '#657b83',
+    foreground: '#fdf6e3',
+    subBackground: '#93a1a1',
+    subForeground: '#eee8d5',
+    accent: '#268bd2'
+  }
+}
+var colors = colorTheme.light
+
+// this code dowsn't work in a widget on homescreen due to the bug.
+// var colors = {
+//   background: Color.dynamic(new Color(colorTheme.light.background), new Color(colorTheme.dark.background)),
+//   foreground: Color.dynamic(new Color(colorTheme.light.foreground), new Color(colorTheme.dark.foreground)),
+//   subBackground: Color.dynamic(new Color(colorTheme.light.subBackground), new Color(colorTheme.dark.subBackground)),
+//   subForeground: Color.dynamic(new Color(colorTheme.light.subForeground), new Color(colorTheme.dark.subForeground)),
+//   accent: Color.dynamic(new Color(colorTheme.light.accent), new Color(colorTheme.dark.accent))
+// }
+widget.backgroundColor = colors.background
 var widgetFamily = config.widgetFamily
 var widgetParameter = args.widgetParameter
 if (config.runsInApp) {
-  var widgetFamily = "extraLarge"
-  var widgetParameter = "record"
+  var widgetFamily = "medium"
+  var widgetParameter = "breakdown"
 }
 record = ["", "", 0, 0]
 
 const tools = {
   center: (stack) => {
     var vc = stack.addStack()  // vc stands for vertical container
+    vc.layoutVertically()
     vc.addSpacer()
     var hc = vc.addStack()
     vc.addSpacer()
     hc.addSpacer()
     var center = hc.addStack()
     hc.addSpacer()
+    return center
+  },
+  modular: (stack) => {
+    stack.size = new Size(144, 144)
+  },
+  highlight: (stack) => {
+    var center = tools.center(stack)
+    center.size = new Size(120, 120)
+    center.backgroundColor = colors.subBackground
+    center.cornerRadius = 10
+    return center
   }
 }
 
@@ -49,42 +77,47 @@ const modules = {
     var c = canvas.getContext("2d");
     c.font = "50px Courier-Bold"
     c.lineWidth = 15
-    c.strokeStyle = "#32de9d"
+    c.strokeStyle = "${colors.foreground.hex}"
     `
     createImage()
-    body = stack.addStack()
+    {
+      stack.addSpacer()
+      var body = stack.addStack()
+      stack.addSpacer()
+    }
+    body.layoutVertically()
     body.addSpacer()
     body.addImage(await getImage()).applyFillingContentMode()
     body.addSpacer()
     return stack
   },
   breakdown: async (stack) => {
-    try {
-      stack.size = new Size(140,100)
-      stack.layoutVertically()
-    } catch {}
-    stack.addSpacer()
+    tools.modular(stack)
+    var breakdownList = tools.highlight(stack)
+    breakdownList.layoutVertically()
+    breakdownList.addSpacer()
     var count = 0
     for (var subj of log) {
+      var line = breakdownList.addStack()
       var text = `${subj.name} : ${subj.hours} H ${subj.minutes} M`
-      var text = stack.addText(text)
+      line.addSpacer()
+      var text = line.addText(text)
+      line.addSpacer()
       text.font = new Font("mono", 13)
+      text.textColor = new Color(colors.subForeground.hex)
       switch (count) {
         case 0:
-          text.textColor = Color.yellow()
+          text.textColor = new Color(colors.accent.hex)
           break
         case 1:
-          text.textColor = Color.gray()
-          break
-        case 2:
-          text.textColor = Color.brown()
+          text.textColor = new Color(colors.foreground.hex)
           break
         default:
           break
       }
       count++
     }
-    stack.addSpacer()
+    breakdownList.addSpacer()
   },
   recordButton: async (stack) => {
     stack.addSpacer() // left spacer
@@ -95,8 +128,8 @@ const modules = {
     var button = buttonContainer.addStack()
     button.layoutVertically()
     buttonContainer.addSpacer()  // bottom spacer
-    button.size = new Size(100, 100)
-    button.backgroundColor = new Color('dfdfdf')
+    button.size = new Size(120, 120)
+    button.backgroundColor = colors.subBackground
     button.cornerRadius = 10
     button.url = 'scriptable:///run/wultidly'
     button.addSpacer()  // top spacer of the text
@@ -105,12 +138,14 @@ const modules = {
     recordContainer.addSpacer()
     var text = recordContainer.addText('Record')
     text.font = new Font('futura', 13)
+    text.textColor = colors.foreground
     recordContainer.addSpacer()
 
     var studyTimeContainer = button.addStack()
     studyTimeContainer.addSpacer()
     var text = studyTimeContainer.addText('Study Time')
     text.font = new Font('futura', 13)
+    text.textColor = colors.foreground
     studyTimeContainer.addSpacer()
 
     button.addSpacer()  // bottom spacer of the text
@@ -118,22 +153,44 @@ const modules = {
   calender: async (stack) => {
     try {
       stack.layoutVertically()
-    } catch {}
+    } catch { }
     stack.addSpacer()
     var horizontal = stack.addStack()
     stack.addSpacer()
     horizontal.addSpacer()
     var today = new Date()
-    var text = `${today.getMonth()+1} / ${today.getDate()}`
+    var text = `${today.getMonth() + 1} / ${today.getDate()}`
     var text = horizontal.addText(text)
     text.font = new Font("futura", 40)
+    text.textColor = colors.foreground
     text.minimumScaleFactor = 0.05
     text.lineLimit = 1
     horizontal.addSpacer()
     return stack
   },
   yesterday: async (stack) => {
-    console.log(test)
+    code = `
+    var canvas = document.querySelector("canvas");
+    var w = 820;
+    var h = 820;
+    canvas.width = w;
+    canvas.height = h;
+    var c = canvas.getContext("2d");
+    c.font = "50px Courier-Bold"
+    c.lineWidth = 15
+    c.strokeStyle = "${colors.foreground.hex}"
+    `
+    createImage(1)
+    {
+      stack.addSpacer()
+      var body = stack.addStack()
+      stack.addSpacer()
+    }
+    body.layoutVertically()
+    body.addSpacer()
+    body.addImage(await getImage()).applyFillingContentMode()
+    body.addSpacer()
+    return stack
   }
 }
 
@@ -141,7 +198,7 @@ const modules = {
 ui = new UITable()
 if (config.runsInApp) {
   createScreen(true)
-//   await ui.present(1)
+  await ui.present(1)
 }
 
 if (widgetFamily == "small") {
@@ -149,7 +206,7 @@ if (widgetFamily == "small") {
 } else if (widgetFamily == "medium") {
   await createMediumWidget(widgetParameter)
 } else if (widgetFamily == "large") {
-  
+
 } else if (widgetFamily == "extraLarge") {
   await createExtraLargeWidget(widgetParameter)
 } else {
@@ -178,30 +235,32 @@ Script.setWidget(widget)
 async function createSmallWidget(type) {
   getInfo()
   if (type === null) {
-    widget.backgroundColor = new Color("#fefffd")
     await modules.pieChart(widget)
   } else if (type == 'breakdown') {
     await modules.breakdown(widget)
   } else if (type == "record") {
     await modules.recordButton(widget)
   } else {
-    widget.addText(type+'/nfailed to create widget')
+    var failtext = widget.addText(type + 'failed to create widget')
+    failtext.textColor = colors.foreground
     console.log("fail")
   }
 }
 
 async function createMediumWidget(type) {
   {   // construct base
-    widget.backgroundColor = new Color('#fefffd')
     var container = widget.addStack()
     container.addSpacer()  // left space
     var left = container.addStack()
     container.addSpacer(20)  // mid space
     var right = container.addStack()
     container.addSpacer()  // right space
+
+    left.size = new Size(144, 144)
+    right.size = new Size(144, 144)
   }
   if (type === null || type == 'breakdown') {
-    right.size = new Size(140,100)
+    right.size = new Size(140, 100)
     await modules.pieChart(left)
     modules.breakdown(right)
   } else if (type == 'record') {
@@ -214,7 +273,6 @@ async function createMediumWidget(type) {
 
 async function createExtraLargeWidget(type) {
   {  // construct base
-    widget.backgroundColor = new Color('#fefffd')
     var container = widget.addStack()
     container.addSpacer()  // left spacer
     var left = container.addStack()
@@ -241,12 +299,18 @@ async function createExtraLargeWidget(type) {
         bottom.addSpacer()
       }
     }
+    {  // modular stacks
+      tools.modular(topLeft)
+      tools.modular(topRight)
+      tools.modular(bottomLeft)
+      tools.modular(bottomRight)
+    }
   }  // base construction finished
   if (type == "" || true) {
     await modules.pieChart(left)
     modules.breakdown(topLeft)
     modules.calender(topRight)
-    await modules.pieChart(bottomLeft)
+    await modules.yesterday(bottomLeft)
     modules.recordButton(bottomRight)
   }
 }
@@ -259,10 +323,11 @@ function circle(radius, start, end, color, title) {
   c.beginPath()
   c.arc(w/2,h/2, ${radius}, ${start}, ${end})
   c.lineTo(w/2, h/2)
+  c.strokeStyle = "${colors.foreground.hex}"
   c.stroke()
   if ("${title}" != "" && ${end - start > 0.5}) {
     correct = c.measureText('${title}').width
-    c.fillStyle = "magenta"
+    c.fillStyle = "${colors.accent.hex}"
     c.fillText("${title}", ${radius}/1.3*Math.cos(${midAngle})+w/2-correct/2, ${radius}/1.3*Math.sin(${midAngle})+h/2+15)
   }`
   return script
@@ -278,7 +343,11 @@ async function getImage() {  // load html
   return Image.fromData(data)
 }
 
-function getInfo() {
+function getInfo(daysDelta = 0) {
+  var today = new Date()
+  today.setDate(today.getDate() - daysDelta)
+  console.log(today)
+  var fileName = `/${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.json`
   if (fm.fileExists(doc + fileName)) {
     log = JSON.parse(fm.readString(doc + fileName))
   } else {
@@ -306,8 +375,9 @@ function getInfo() {
   }
 }
 
-function createImage() {  // generate code to create image
-  getInfo()
+function createImage(daysDelta = 0) {  // generate code to create image
+  getInfo(daysDelta)
+  console.log(log)
   now = 0
   for (var subj of log) {
     code += "\n" + circle(400, 2 * Math.PI * now / info.total, 2 * Math.PI * (now + subj.time) / info.total, 'no color', subj.name)
@@ -316,11 +386,11 @@ function createImage() {  // generate code to create image
   code += `
   c.lineWidth = 30
   ${circle(200, 0, 2 * Math.PI, '#fefffd', "")}
-  c.fillStyle="#fefffd"
+  c.fillStyle="${colors.background.hex}"
   c.fill()`
 
   code += `
-  c.fillStyle = "#cdcdcd"
+  c.fillStyle = "${colors.subForeground.hex}"
   c.font="80px futura"
   c.fillText("${Math.floor(info.total_int / 60)} Hrs", w/2-c.measureText("${Math.floor(info.total_int / 60)} Hrs").width/2, h/2-10)
   c.fillText("${info.total_int - 60 * Math.floor(info.total / 60)} min", w/2-c.measureText("${info.total_int - 60 * Math.floor(info.total / 60)} min").width/2, h/2+70)`
@@ -351,7 +421,7 @@ function moveTo(array, from, direction) {
 function createScreen(loadFiles = false) {
   fm = FileManager.local()
   var setSubjectsPath = fm.documentsDirectory() + '/wultidly/setSubjects'
-  if (!fm.fileExists(fm.documentsDirectory()+'/wultidly')) {
+  if (!fm.fileExists(fm.documentsDirectory() + '/wultidly')) {
     fm.createDirectory(fm.documentsDirectory() + '/wultidly')
   }
   if (!fm.fileExists(setSubjectsPath)) {
@@ -364,7 +434,8 @@ function createScreen(loadFiles = false) {
   var AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
   var title = new UITableRow()
   title.isHeader = true
-  title.addText("Recorder").centerAligned()
+  var text = title.addText("Recorder")
+  text.centerAligned()
   ui.addRow(title)
 
   if (record[0] == "" || record[1] == "") {
