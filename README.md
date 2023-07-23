@@ -32,6 +32,7 @@ fm.writeString(fm.documentsDirectory()+"/widgetsUpodator.js", await rq.loadStrin
 | randomQuotes  | o     | o      | o     | o           |
 | timeTable     | o     | o      | o     | o           |
 | tsfm          | x     | x      | x     | x           |
+| wultidly      | o     | o      | o     | o           |
 | wigetsUpdator | x     | x      | x     | x           |
 
 ### daysLeft
@@ -52,6 +53,9 @@ Scriptableから実行することで時間割やカラーテーマなどの設�
 
 ### tsfm
 ターミナル風のファイルマネージャーです。
+
+### wultidly
+勉強時間と集中力をかけ算して記録するスクリプトです。
 
 ### widgetsUpdator
 すべてのスクリプトを最新の状態に更新します。
