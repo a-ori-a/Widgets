@@ -596,5 +596,3 @@ else if (config.widgetFamily == 'medium')
   tmp.textColor = new Color(settings.theme.bg)
   tmp.font = new Font('Kailasa-Bold', 16)
 }
-Script.setWidget(list)
-Script.complete()
