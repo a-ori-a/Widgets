@@ -21,12 +21,36 @@ const colors = ["#012345", "#234567", "#456789", "#6789ab", "#89abcd"]
 var widgetFamily = config.widgetFamily
 var widgetParameter = args.widgetParameter
 if (config.runsInApp) {
-  var widgetFamily = "medium"
+  var widgetFamily = "extraLarge"
   var widgetParameter = "record"
 }
 record = ["", "", 0, 0]
+
+const tools = {
+  center: (stack) => {
+    var vc = stack.addStack()  // vc stands for vertical container
+    vc.addSpacer()
+    var hc = vc.addStack()
+    vc.addSpacer()
+    hc.addSpacer()
+    var center = hc.addStack()
+    hc.addSpacer()
+  }
+}
+
 const modules = {
   pieChart: async (stack) => {
+    code = `
+    var canvas = document.querySelector("canvas");
+    var w = 820;
+    var h = 820;
+    canvas.width = w;
+    canvas.height = h;
+    var c = canvas.getContext("2d");
+    c.font = "50px Courier-Bold"
+    c.lineWidth = 15
+    c.strokeStyle = "#32de9d"
+    `
     createImage()
     body = stack.addStack()
     body.addSpacer()
@@ -36,6 +60,7 @@ const modules = {
   },
   breakdown: async (stack) => {
     try {
+      stack.size = new Size(140,100)
       stack.layoutVertically()
     } catch {}
     stack.addSpacer()
@@ -102,11 +127,13 @@ const modules = {
     var text = `${today.getMonth()+1} / ${today.getDate()}`
     var text = horizontal.addText(text)
     text.font = new Font("futura", 40)
+    text.minimumScaleFactor = 0.05
+    text.lineLimit = 1
     horizontal.addSpacer()
     return stack
   },
-  yesterday: async (stack) {
-    
+  yesterday: async (stack) => {
+    console.log(test)
   }
 }
 
@@ -114,70 +141,113 @@ const modules = {
 ui = new UITable()
 if (config.runsInApp) {
   createScreen(true)
-  await ui.present(0)
+//   await ui.present(1)
 }
 
-if (widgetFamily == 'small') {
-  getInfo()
+if (widgetFamily == "small") {
   await createSmallWidget(widgetParameter)
-  widget.presentSmall()
-} else if (widgetFamily == "large") {
-  if (widgetParameter == 'test') {
-
-  } else {
-    getInfo()
-    await createSquareWidget()
-    widget.presentLarge()
-  }
-} else if (widgetFamily == "medium" || widgetFamily == "extraLarge" || config.runsInApp) {
-  getInfo()
+} else if (widgetFamily == "medium") {
   await createMediumWidget(widgetParameter)
-  widget.presentMedium()
+} else if (widgetFamily == "large") {
+  
+} else if (widgetFamily == "extraLarge") {
+  await createExtraLargeWidget(widgetParameter)
+} else {
+  console.log("Not a valid widget family")
+}
+
+if (config.runsInApp) {
+  if (widgetFamily == "small") {
+    widget.presentSmall()
+  } else if (widgetFamily == "medium") {
+    widget.presentMedium()
+  } else if (widgetFamily == "large") {
+    widget.presentLarge()
+  } else if (widgetFamily == "extraLarge") {
+    widget.presentExtraLarge()
+  }
 }
 Script.setWidget(widget)
 
 // useful functions
-async function createSquareWidget() {
-  widget.backgroundColor = new Color("#fefffd")
-  modules.pieChart(widget)
-}
+// async function createSquareWidget() {
+//   widget.backgroundColor = new Color("#fefffd")
+//   modules.pieChart(widget)
+// }
 
 async function createSmallWidget(type) {
+  getInfo()
   if (type === null) {
     widget.backgroundColor = new Color("#fefffd")
     await modules.pieChart(widget)
   } else if (type == 'breakdown') {
     await modules.breakdown(widget)
+  } else if (type == "record") {
+    await modules.recordButton(widget)
   } else {
-    widget.addText(type)
+    widget.addText(type+'/nfailed to create widget')
     console.log("fail")
   }
 }
 
 async function createMediumWidget(type) {
-  if (type === null || type == 'breakdown') {
+  {   // construct base
     widget.backgroundColor = new Color('#fefffd')
-    createImage()
     var container = widget.addStack()
     container.addSpacer()  // left space
-    var pie = container.addImage(await getImage())
+    var left = container.addStack()
     container.addSpacer(20)  // mid space
-    var description = container.addStack()
+    var right = container.addStack()
     container.addSpacer()  // right space
-    description.size = new Size(140,100)
-    modules.calender(description)
+  }
+  if (type === null || type == 'breakdown') {
+    right.size = new Size(140,100)
+    await modules.pieChart(left)
+    modules.breakdown(right)
   } else if (type == 'record') {
-    console.log("record")
-    widget.backgroundColor = new Color('#fefffd')
-
-    var container = widget.addStack()
-    container.addSpacer()  // left space
-    await modules.pieChart(container)
-    container.addSpacer(40)  // mid space
-    var btn = container.addStack()
-    modules.recordButton(btn)
+    await modules.pieChart(left)
+    modules.recordButton(right)
   } else {
     console.log(type)
+  }
+}
+
+async function createExtraLargeWidget(type) {
+  {  // construct base
+    widget.backgroundColor = new Color('#fefffd')
+    var container = widget.addStack()
+    container.addSpacer()  // left spacer
+    var left = container.addStack()
+    container.addSpacer(40)  // mid spacer(twice as big as the space of medium widget)
+    var right = container.addStack()
+    container.addSpacer()  // right spacer
+
+    {  // construct base in the right stack
+      right.layoutVertically()
+      var top = right.addStack()
+      var bottom = right.addStack()
+      {  // construct base in the top stack
+        top.addSpacer()
+        var topLeft = top.addStack()
+        top.addSpacer(20)
+        var topRight = top.addStack()
+        top.addSpacer()
+      }
+      {  // construct base in the bottom stack
+        bottom.addSpacer()
+        var bottomLeft = bottom.addStack()
+        bottom.addSpacer(20)
+        var bottomRight = bottom.addStack()
+        bottom.addSpacer()
+      }
+    }
+  }  // base construction finished
+  if (type == "" || true) {
+    await modules.pieChart(left)
+    modules.breakdown(topLeft)
+    modules.calender(topRight)
+    await modules.pieChart(bottomLeft)
+    modules.recordButton(bottomRight)
   }
 }
 
@@ -317,7 +387,6 @@ function createScreen(loadFiles = false) {
       var up = sbj.addButton('▲')
       up.widthWeight = 10
       up.code = `
-      console.log('tapped')
       ${moveTo}
       ${createScreen}
       var fm = FileManager.local()
@@ -355,7 +424,6 @@ function createScreen(loadFiles = false) {
     var fm = FileManager.local()
     var setSubjectsPath = fm.documentsDirectory() + '/wultidly/setSubjects'
     var setSubjects = JSON.parse(fm.readString(setSubjectsPath))
-    console.log(setSubjects)
     var alert = new Alert()
     alert.title = 'Enter the name of new subject'
     alert.message = "If you want to delete an existing subject, enter its name"
@@ -366,14 +434,16 @@ function createScreen(loadFiles = false) {
     if (result == 0 && alert.textFieldValue(0) != '') {
       if (setSubjects.includes(alert.textFieldValue(0))) {
         setSubjects.splice(setSubjects.indexOf(alert.textFieldValue(0)), 1)
+        var action = "deleted"
       } else {
         setSubjects.push(alert.textFieldValue(0))
+        var action = "added"
       }
 
       fm.writeString(setSubjectsPath, JSON.stringify(setSubjects))
       createScreen()
       alert = new Alert()
-      alert.title = "Subject added successfully"
+      alert.title = "Subject "+action+" successfully"
       alert.addAction("OK")
       var result = await alert.present()
     } else {
@@ -472,7 +542,6 @@ function createScreen(loadFiles = false) {
         }
         indexCount++
       }
-      console.log(record[0])
       if (searchFlag == -1) {
         log.push({
           name: record[0],
@@ -481,7 +550,6 @@ function createScreen(loadFiles = false) {
         })
         indexCount = log.length - 1
       }
-      console.log(indexCount)
       var gain = {
         "worst": 0.5,
         "bad": 0.75,
