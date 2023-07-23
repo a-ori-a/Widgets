@@ -351,8 +351,8 @@ function moveTo(array, from, direction) {
 function createScreen(loadFiles = false) {
   fm = FileManager.local()
   var setSubjectsPath = fm.documentsDirectory() + '/wultidly/setSubjects'
-  if (!fm.fileExists(fm.documentsDirectory+'/wultidly')) {
-    fm.createDirectory(fm.documentsDirectory + '/wultidly')
+  if (!fm.fileExists(fm.documentsDirectory()+'/wultidly')) {
+    fm.createDirectory(fm.documentsDirectory() + '/wultidly')
   }
   if (!fm.fileExists(setSubjectsPath)) {
     var setSubjects = ['国語', '数学', '英語', '化学', '物理', '地理', 'その他']
