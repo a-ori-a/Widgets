@@ -1,6 +1,3 @@
-// Variables used by Scriptable.
-// These must be at the very top of the file. Do not edit.
-// icon-color: orange; icon-glyph: stopwatch;
 var code = ''
 var widget = new ListWidget()
 var fm = FileManager.local()
@@ -206,7 +203,7 @@ if (widgetFamily == "small") {
 } else if (widgetFamily == "medium") {
   await createMediumWidget(widgetParameter)
 } else if (widgetFamily == "large") {
-
+  await createSmallWidget(widgetParameter)
 } else if (widgetFamily == "extraLarge") {
   await createExtraLargeWidget(widgetParameter)
 } else {
@@ -240,6 +237,10 @@ async function createSmallWidget(type) {
     await modules.breakdown(widget)
   } else if (type == "record") {
     await modules.recordButton(widget)
+  } else if (type == "calender") {
+    modules.calender(widget)
+  } else if (type == "yesterday") {
+    await modules.yesterday(widget)
   } else {
     var failtext = widget.addText(type + 'failed to create widget')
     failtext.textColor = colors.foreground
@@ -267,6 +268,7 @@ async function createMediumWidget(type) {
     await modules.pieChart(left)
     modules.recordButton(right)
   } else {
+    widget.addText(type+" is not supported")
     console.log(type)
   }
 }
@@ -346,7 +348,6 @@ async function getImage() {  // load html
 function getInfo(daysDelta = 0) {
   var today = new Date()
   today.setDate(today.getDate() - daysDelta)
-  console.log(today)
   var fileName = `/${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.json`
   if (fm.fileExists(doc + fileName)) {
     log = JSON.parse(fm.readString(doc + fileName))
@@ -377,7 +378,6 @@ function getInfo(daysDelta = 0) {
 
 function createImage(daysDelta = 0) {  // generate code to create image
   getInfo(daysDelta)
-  console.log(log)
   now = 0
   for (var subj of log) {
     code += "\n" + circle(400, 2 * Math.PI * now / info.total, 2 * Math.PI * (now + subj.time) / info.total, 'no color', subj.name)
