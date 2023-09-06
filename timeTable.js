@@ -90,7 +90,7 @@ if (!fm.fileExists(dataDir)) {
   		"updateTime": "#50fa7b",
   		"accent": "#6272a4"
   		},
-  	"theme": "custom",
+  	"theme": "light",
   	"sysColumnStart": 0.323,
   	"sysSpacePerColumn": 0.066,
   	"sysLineHeight": 0.03,
@@ -152,7 +152,7 @@ const data = {
   'isSunday' : [0, 7].includes(day),
   'week' : [1,2,3,4,5,6,7].includes(day) ? 'A':'B', // if day < 6, set A else B (when week is B, day ranges from 7~13) (Sunday is0 or 7, and we should reagard Sunday as next week to see Monday's class)
   'now' : hmNow < 850 ? '始業前' : hmNow >= TimeSplit[maxClass+1] ? '放課後' : Schedule[day][classIndex],
-  'next' : classIndex == maxClass ? '放課後' : classIndex > maxClass ? /*'Today\'s class has ended'*/'今日の授業は終了しました' : Schedule[day][classIndex + 1],
+  'next' : classIndex == maxClass ? '放課後' : classIndex > maxClass ? /*'Today\'s class has ended''今日の授業は終了しました'*/'' : Schedule[day][classIndex + 1],
   'period' : timeLength[classIndex+1],
   'nextPeriod' : timeLength[classIndex+2],
   'isRestTime' : [2,3].includes(classIndex) ? 45 < mmNow - TimeSplitMinutes[classIndex] && mmNow - TimeSplitMinutes[classIndex] < 70 : 45 < mmNow - TimeSplitMinutes[classIndex] && mmNow - TimeSplitMinutes[classIndex] < 55,
@@ -386,7 +386,7 @@ if (config.widgetFamily == 'extraLarge') {
     tmp.textColor = new Color(settings.theme.current)
     tmp.centerAlignText()
   }  
-  var lastUpdate = list.addText('Last updated : ' + fmt.string(time))
+  var lastUpdate = list.addText('Last update : ' + fmt.string(time))
   lastUpdate.textColor = new Color(settings.theme.updateTime)
   lastUpdate.rightAlignText()
   lastUpdate.font = new Font('Kailasa-Bold', 10)
@@ -603,7 +603,7 @@ else if (config.widgetFamily == 'medium')
   if (data.isSunday) {
     tmp = next.addText('<-- get ready for tomorrow')
   } else if (data.isAfterSchool) {
-    tmp = next.addText('今日の授業は終了しました')
+    tmp = next.addText('')//'今日の授業は終了しました')
   } else { 
     tmp = next.addText(data.next + '\n' + data.nextPeriod)
   }
