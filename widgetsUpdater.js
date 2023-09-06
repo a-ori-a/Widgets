@@ -1,7 +1,7 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
 // icon-color: teal; icon-glyph: magic;
-const rawFiles = ["widgetsUpdator.js", "dayCounter.js", "randomQuotes.js", "tsfm.js", "timeTable.js", "wultidly.js"]
+const rawFiles = ["widgetsUpdater.js", "dayCounter.js", "randomQuotes.js", "tsfm.js", "timeTable.js", "wultidly.js"]
 var fm = FileManager.iCloud()
 var root = fm.documentsDirectory() + '/'
 var anyUpdate = false
