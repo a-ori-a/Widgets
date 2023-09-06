@@ -24,15 +24,6 @@ const colorTheme = {
   }
 }
 var colors = colorTheme.light
-
-// this code dowsn't work in a widget on homescreen due to the bug.
-// var colors = {
-//   background: Color.dynamic(new Color(colorTheme.light.background), new Color(colorTheme.dark.background)),
-//   foreground: Color.dynamic(new Color(colorTheme.light.foreground), new Color(colorTheme.dark.foreground)),
-//   subBackground: Color.dynamic(new Color(colorTheme.light.subBackground), new Color(colorTheme.dark.subBackground)),
-//   subForeground: Color.dynamic(new Color(colorTheme.light.subForeground), new Color(colorTheme.dark.subForeground)),
-//   accent: Color.dynamic(new Color(colorTheme.light.accent), new Color(colorTheme.dark.accent))
-// }
 widget.backgroundColor = colors.background
 var widgetFamily = config.widgetFamily
 var widgetParameter = args.widgetParameter
@@ -56,6 +47,7 @@ const tools = {
   },
   modular: (stack) => {
     stack.size = new Size(144, 144)
+    return stack
   },
   highlight: (stack) => {
     var center = tools.center(stack)
@@ -150,7 +142,7 @@ const modules = {
 
     button.addSpacer()  // bottom spacer of the text
   },
-  calender: async (stack) => {
+  calendar: async (stack) => {
     try {
       stack.layoutVertically()
     } catch { }
@@ -210,18 +202,35 @@ const modules = {
     var max = Math.max(${logs})
     var c = canvas.getContext("2d");
     c.strokeStyle = "${colors.foreground.hex}"
-    c.lineWidth = 15
+    c.lineWidth = 14
     c.fillStyle = "${colors.foreground.hex}"
-    c.font = "45px Courier-Bold"
     var today = new Date()
     today.setDate(today.getDate()-7)
-    c.rect(0,700,820,1)
+    c.moveTo(0,700)
+    c.lineTo(820,700)
+    c.stroke()
+    
+    c.lineWidth = 5
+    c.strokeStyle = "${colors.accent.hex}"
+    c.beginPath()
+    for (var i of [180, 360, 540, 720, 900]) {
+      height = 650*i/max
+      c.moveTo(0, 700-height)
+      c.lineTo(820, 700-height)
+    }
+    c.stroke()
+    
+    c.beginPath()
+    c.lineWidth = 14
+    c.strokeStyle = "${colors.foreground.hex}"
     var counter = 0
     for (var i of [${logs}]) {
       height = 650*i/max
       c.rect(117*counter+30,700,50,-height)
       today.setDate(today.getDate()+1)
+      c.font = "45px Courier-Bold"
       c.fillText((""+today.getDate()).padStart(2,"0"),117*counter+30,750)
+      c.font = "45px Courier-Bold"
       hs = Math.trunc(i/6)/10
       diff = c.measureText(hs).width/2
       c.fillText(hs,117*counter+55-diff,690-height)
@@ -236,12 +245,6 @@ const modules = {
     }
     body.layoutVertically()
     body.addSpacer()
-    var titleStack = body.addStack()
-    titleStack.addSpacer()
-    var title = titleStack.addText("Weekly Report")
-    titleStack.addSpacer()
-    title.textColor = colors.foreground
-    title.font = new Font('futura', 10)
     body.addImage(await getImage()).applyFillingContentMode()
     body.addSpacer()
     return stack
@@ -267,41 +270,24 @@ if (widgetFamily == "small") {
   console.log("Not a valid widget family")
 }
 
-// if (config.runsInApp) {
-//   if (widgetFamily == "small") {
-//     widget.presentSmall()
-//   } else if (widgetFamily == "medium") {
-//     widget.presentMedium()
-//   } else if (widgetFamily == "large") {
-//     widget.presentLarge()
-//   } else if (widgetFamily == "extraLarge") {
-//     widget.presentExtraLarge()
-//   }
-// }
 Script.setWidget(widget)
-
-// useful functions
-// async function createSquareWidget() {
-//   widget.backgroundColor = new Color("#fefffd")
-//   modules.pieChart(widget)
-// }
 
 async function createSmallWidget(type) {
   getInfo()
-  if (type === null) {
+  if (type === null || type == "") {
     await modules.pieChart(widget)
   } else if (type == 'breakdown') {
     await modules.breakdown(widget)
   } else if (type == "record") {
     await modules.recordButton(widget)
-  } else if (type == "calender") {
-    modules.calender(widget)
+  } else if (type == "calendar") {
+    modules.calendar(widget)
   } else if (type == "yesterday") {
     await modules.yesterday(widget)
   } else if (type=="chart") {
     await modules.chart(widget)
   } else {
-    var failtext = widget.addText(type + 'failed to create widget')
+    var failtext = widget.addText(type + ' failed to create widget')
     failtext.textColor = colors.foreground
     console.log("fail")
   }
@@ -369,10 +355,10 @@ async function createExtraLargeWidget(type) {
   }  // base construction finished
   if (type == "" || true) {
     await modules.pieChart(left)
-    modules.breakdown(topLeft)
-    modules.calender(topRight)
-    await modules.yesterday(bottomLeft)
-    modules.recordButton(bottomRight)
+    await modules.breakdown(topLeft)
+    await modules.yesterday(topRight)
+    await modules.chart(bottomLeft)
+    await modules.recordButton(bottomRight)
   }
 }
 
