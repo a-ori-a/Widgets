@@ -9,11 +9,11 @@ Widgets for iOS and iPad OS using Scriptable
 3. 下のコードをプロジェクトにコピペします。
 ```javascript
 fm = FileManager.iCloud();
-var rq = new Request("https://raw.githubusercontent.com/a-ori-a/Widgets/master/widgetsUpdator.js");
-fm.writeString(fm.documentsDirectory()+"/widgetsUpodator.js", await rq.loadString());
+var rq = new Request("https://raw.githubusercontent.com/a-ori-a/Widgets/master/widgetsUpdater.js");
+fm.writeString(fm.documentsDirectory()+"/widgetsUpodater.js", await rq.loadString());
 ``` 
-4. コピペしたコードを実行するとwidgetsUpdatorというスクリプトがダウンロードされます。
-5. 最後にこのwigetsUpdatorというスクリプトを実行するとすべてのウィジェットがダウンロードされます。
+4. コピペしたコードを実行するとwidgetsUpdaterというスクリプトがダウンロードされます。
+5. 最後にこのwigetsUpdaterというスクリプトを実行するとすべてのウィジェットがインストールされます。
 
 
 
@@ -27,8 +27,7 @@ fm.writeString(fm.documentsDirectory()+"/widgetsUpodator.js", await rq.loadStrin
 ### サイズごとの対応状況
 |               | Small | Medium | Large | Extra Large |
 | ------------- | ----- | ------ | ----- | ----------- |
-| dayCounter    | o     | x      | x     | x           |
-| daysLeft      | o     | o      | x     | x           |
+| dayCounter    | o     | o      | x     | x           |
 | randomQuotes  | o     | o      | o     | o           |
 | timeTable     | o     | o      | o     | o           |
 | tsfm          | x     | x      | x     | x           |
