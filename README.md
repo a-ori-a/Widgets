@@ -10,7 +10,7 @@ Widgets for iOS and iPad OS using Scriptable
 ```javascript
 fm = FileManager.iCloud();
 var rq = new Request("https://raw.githubusercontent.com/a-ori-a/Widgets/master/widgetsUpdater.js");
-fm.writeString(fm.documentsDirectory()+"/widgetsUpodater.js", await rq.loadString());
+fm.writeString(fm.documentsDirectory()+"/widgetsUpdater.js", await rq.loadString());
 ``` 
 4. コピペしたコードを実行するとwidgetsUpdaterというスクリプトがダウンロードされます。
 5. 最後にこのwigetsUpdaterというスクリプトを実行するとすべてのウィジェットがインストールされます。
