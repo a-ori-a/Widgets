@@ -37,8 +37,8 @@ widget.backgroundColor = colors.background
 var widgetFamily = config.widgetFamily
 var widgetParameter = args.widgetParameter
 if (config.runsInApp) {
-  var widgetFamily = "medium"
-  var widgetParameter = "breakdown"
+  var widgetFamily = "large"
+  var widgetParameter = "chart"
 }
 record = ["", "", 0, 0]
 
@@ -191,6 +191,60 @@ const modules = {
     body.addImage(await getImage()).applyFillingContentMode()
     body.addSpacer()
     return stack
+  },
+  chart: async (stack) => {
+    var logs = []
+    for (var i = 6;i>=0; i--) {
+      try {
+        logs.push(getInfo(i).total_int)
+      } catch {
+        logs.push(0)
+      }
+    }
+    code = `
+    var canvas = document.querySelector("canvas");
+    var w = 820;
+    var h = 820;
+    canvas.width = w;
+    canvas.height = h;
+    var max = Math.max(${logs})
+    var c = canvas.getContext("2d");
+    c.strokeStyle = "${colors.foreground.hex}"
+    c.lineWidth = 15
+    c.fillStyle = "${colors.foreground.hex}"
+    c.font = "45px Courier-Bold"
+    var today = new Date()
+    today.setDate(today.getDate()-7)
+    c.rect(0,700,820,1)
+    var counter = 0
+    for (var i of [${logs}]) {
+      height = 650*i/max
+      c.rect(117*counter+30,700,50,-height)
+      today.setDate(today.getDate()+1)
+      c.fillText((""+today.getDate()).padStart(2,"0"),117*counter+30,750)
+      hs = Math.trunc(i/6)/10
+      diff = c.measureText(hs).width/2
+      c.fillText(hs,117*counter+55-diff,690-height)
+      counter ++
+    }
+    c.stroke()
+    `
+    {
+      stack.addSpacer()
+      var body = stack.addStack()
+      stack.addSpacer()
+    }
+    body.layoutVertically()
+    body.addSpacer()
+    var titleStack = body.addStack()
+    titleStack.addSpacer()
+    var title = titleStack.addText("Weekly Report")
+    titleStack.addSpacer()
+    title.textColor = colors.foreground
+    title.font = new Font('futura', 10)
+    body.addImage(await getImage()).applyFillingContentMode()
+    body.addSpacer()
+    return stack
   }
 }
 
@@ -213,17 +267,17 @@ if (widgetFamily == "small") {
   console.log("Not a valid widget family")
 }
 
-if (config.runsInApp) {
-  if (widgetFamily == "small") {
-    widget.presentSmall()
-  } else if (widgetFamily == "medium") {
-    widget.presentMedium()
-  } else if (widgetFamily == "large") {
-    widget.presentLarge()
-  } else if (widgetFamily == "extraLarge") {
-    widget.presentExtraLarge()
-  }
-}
+// if (config.runsInApp) {
+//   if (widgetFamily == "small") {
+//     widget.presentSmall()
+//   } else if (widgetFamily == "medium") {
+//     widget.presentMedium()
+//   } else if (widgetFamily == "large") {
+//     widget.presentLarge()
+//   } else if (widgetFamily == "extraLarge") {
+//     widget.presentExtraLarge()
+//   }
+// }
 Script.setWidget(widget)
 
 // useful functions
@@ -244,6 +298,8 @@ async function createSmallWidget(type) {
     modules.calender(widget)
   } else if (type == "yesterday") {
     await modules.yesterday(widget)
+  } else if (type=="chart") {
+    await modules.chart(widget)
   } else {
     var failtext = widget.addText(type + 'failed to create widget')
     failtext.textColor = colors.foreground
@@ -377,6 +433,7 @@ function getInfo(daysDelta = 0) {
     raw: rawTime,
     efficiency: Math.floor(totalTime / rawTime * 100)
   }
+  return info
 }
 
 function createImage(daysDelta = 0) {  // generate code to create image
@@ -629,10 +686,10 @@ function createScreen(loadFiles = false) {
       }
       var gain = {
         "worst": 0.5,
-        "bad": 0.75,
-        "normal": 1.0,
-        "good": 1.25,
-        "best": 1.5
+        "bad": 0.625,
+        "normal": 0.75,
+        "good": 0.875,
+        "best": 1
       }
       log[indexCount].name = record[0]
       log[indexCount].time += (60 * record[2] + record[3]) * gain[record[1]]
