@@ -1,6 +1,6 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
-// icon-color: green; icon-glyph: magic;
+// icon-color: red; icon-glyph: calendar-alt;
 var today = new Date()
 var widget = new ListWidget()
 var first = new Date()
