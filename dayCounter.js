@@ -1,6 +1,6 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
-// icon-color: deep-blue; icon-glyph: magic;
+// icon-color: brown; icon-glyph: business-time;
 const base = new ListWidget()
 
 var sunday = false
