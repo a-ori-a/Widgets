@@ -394,7 +394,8 @@ if (config.widgetFamily == 'extraLarge') {
 else if (config.widgetFamily == 'small')
 {
   // small widget (146 x 146)
-  list.backgroundColor = new Color(settings.theme.bg)
+//  list.backgroundColor = new Color(settings.theme.bg)
+  list.backgroundColor = new Color("#eee8d5")
   let information = list.addStack()
   let current = information.addStack() // left side
 	current = current.addStack()
@@ -408,6 +409,7 @@ else if (config.widgetFamily == 'small')
   current.size = new Size(53,146)
   current.backgroundColor = new Color(settings.theme.title)
   next.backgroundColor = new Color(settings.theme.bg)
+  next.backgroundColor = new Color("#eee8d5")
   under.backgroundColor = new Color(settings.theme.accent)
   smallRight.size = new Size(93, 146)
   under.size = new Size(93, 46)
