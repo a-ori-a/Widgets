@@ -1,6 +1,6 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
-// icon-color: orange; icon-glyph: magic;
+// icon-color: red; icon-glyph: list-ul;
 var cd = await Calendar.forReminders()
 var widget = new ListWidget()
 var today = new Date()
