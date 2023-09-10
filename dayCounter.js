@@ -66,6 +66,7 @@ if (config.runsInAccessoryWidget) {
   eventDate.textColor = colors.foreground
 
   var counter = base.addText("" + diffDate)
+  counter.textColor = colors.foreground
 } else if (config.widgetFamily == "medium") {
   base.addSpacer()
 
