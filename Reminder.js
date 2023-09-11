@@ -140,9 +140,14 @@ for (var i of [0, 1, 2]) {
     text.textColor = colors.foreground
 }
 tasks = (workings.concat(notNows.concat(overs))).sort(compare)
-if (tasks.length > 5) {
-    tasks = tasks.slice(tasks.length-5, tasks.length)
+
+if (tasks.length <= 5) {
+    for (var i = 0;i<5;i++) {
+        console.log(i)
+        tasks.unshift({title: '', dueDate: null})
+    }
 }
+tasks = tasks.slice(tasks.length-5, tasks.length)
 
 var counter = 1
 for (var i of tasks) {
