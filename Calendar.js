@@ -2,12 +2,9 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: red; icon-glyph: calendar-alt;
 var today = new Date()
-var nxtMonth = new Date()
-nxtMonth.setMonth(nxtMonth.getMonth()+1)
-nxtMonth.setDate(-1)
-var lastDay = nxtMonth.getDate() +1
 var widget = new ListWidget()
 var first = new Date()
+var last = new Date(today.getFullYear(), today.getMonth()+1, 0)
 first.setDate(1)
 var firstDay = first.getDay()
 // Sun : 0, Mon : 1, ~ ~ ~, Fri : 5, Sat : 6
@@ -58,7 +55,7 @@ for (var i=0;i<position;i++) {
     date.textColor = colors.foreground
 }
 var index = 0
-for (var i = 1;i<lastDay+1;i++) {
+for (var i = 1;i<last.getDate()+1;i++) {
     var box = lines[index].addStack()
     box.size = new Size(16,16)
     box.centerAlignContent()
