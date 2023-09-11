@@ -227,6 +227,9 @@ var warningHolder = adjust.addStack()
 warningHolder.centerAlignContent()
 warningHolder.addSpacer()
 for (var i of code) {
+		if (i.status == '発表警報・注意報はなし') {
+			break
+		}
     if (i.status != '解除'){
     	putWarningIcon(warningHolder, interpretWarning(i.code))
     }
