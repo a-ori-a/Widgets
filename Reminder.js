@@ -4,7 +4,7 @@
 var cd = await Calendar.forReminders()
 var widget = new ListWidget()
 var today = new Date()
-var standard = new Date(today.getFullYear()+"/"+(today.getMonth()+1)+"/"+today.getDate())
+var standard = new Date(today.getFullYear(), today.getMonth(),today.getDate())
 var cmark = SFSymbol.named("checkmark.square")
 var xmark = SFSymbol.named("xmark.square")
 var play = SFSymbol.named("play.square")
@@ -91,6 +91,7 @@ for (var i of tasks) {
     }
 }
 
+
 widget.backgroundColor = colors.background
 var body = widget.addStack()
 var info = body.addStack()
@@ -139,7 +140,9 @@ for (var i of [0, 1, 2]) {
     text.textColor = colors.foreground
 }
 tasks = (workings.concat(notNows.concat(overs))).sort(compare)
-tasks = tasks.slice(tasks.length-5, tasks.length)
+if (tasks.length > 5) {
+    tasks = tasks.slice(tasks.length-5, tasks.length)
+}
 
 var counter = 1
 for (var i of tasks) {
