@@ -36,25 +36,7 @@ const colors = {
 	subForeground: new Color("#93a1a1"),
 	accent: new Color("#268bd2"),
 };
-var symbols = {
-	Thunderstorm: SFSymbol.named("cloud.bolt.rain.fill"),
-	Drizzle: SFSymbol.named("cloud.drizzle.fill"),
-	Ra: SFSymbol.named("cloud.rain.fill"),
-	Sn: SFSymbol.named("cloud.snow.fill"),
-	Atmosphere: SFSymbol.named("cloud.fog.fill"),
-	Cl: SFSymbol.named("cloud.fill"),
-	Su: SFSymbol.named(isSun? "sun.max.fill":"moon.stars.fill"),
-	Bar: SFSymbol.named("poweron"),
-	Less: SFSymbol.named("lessthan")
-};
 
-var iconSize = 45
-for (var i in symbols) {
-	symbols[i].applyFont(Font.systemFont(iconSize))
-	if (i == "Less") {
-		symbols[i].applyFont(Font.systemFont(11))
-	}
-}
 
 var r = new Request(url);
 try {
@@ -115,7 +97,27 @@ var temp = fm.readString(tPath).split(',')
 r = new Request(sun)
 var sun_rise_set = await r.loadJSON()
 var t = [sun_rise_set.rise_and_set.sunrise_hm.split(':'), sun_rise_set.rise_and_set.sunset_hm.split(':')]
-var isSun = (t[0][0] < now.getHours() && t[0][1] < now.getMinutes()) && (t[1][0] > now.getHours() && t[1][1] > now.getMinutes())
+
+var isSun = (new Date(now.getFullYear(), t[0][0], t[0][1]).getTime() <= now.getTime() && now.getTime() <= new Date(now.getFullYear(), t[1][0], t[1][1]).getTime())
+var symbols = {
+	Thunderstorm: SFSymbol.named("cloud.bolt.rain.fill"),
+	Drizzle: SFSymbol.named("cloud.drizzle.fill"),
+	Ra: SFSymbol.named("cloud.rain.fill"),
+	Sn: SFSymbol.named("cloud.snow.fill"),
+	Atmosphere: SFSymbol.named("cloud.fog.fill"),
+	Cl: SFSymbol.named("cloud.fill"),
+	Su: SFSymbol.named(isSun? "sun.max.fill":"moon.stars.fill"),
+	Bar: SFSymbol.named("poweron"),
+	Less: SFSymbol.named("lessthan")
+};
+
+var iconSize = 45
+for (var i in symbols) {
+	symbols[i].applyFont(Font.systemFont(iconSize))
+	if (i == "Less") {
+		symbols[i].applyFont(Font.systemFont(11))
+	}
+}
 
 var report = weatherCodes(json[0].timeSeries[0].areas[0].weatherCodes[0])
 var body = widget.addStack()
