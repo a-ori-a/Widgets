@@ -25,7 +25,7 @@ const colors = {
     accent: new Color('#268bd2')
 }
 const Month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-const day = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 function compare(a, b) {
   var r = 0
@@ -79,6 +79,8 @@ for (var i of tasks) {
     if (!i.isCompleted) {
         if (i.isOverdue) {
             overs.push(i)
+        } else if (i.dueDate  === null) {
+            notNows.push(i)
         } else if (i.dueDate.getTime() == standard.getTime()) {
             workings.push(i)
         } else {
@@ -90,7 +92,6 @@ for (var i of tasks) {
         }
     }
 }
-
 
 widget.backgroundColor = colors.background
 var body = widget.addStack()
@@ -118,7 +119,7 @@ var topCal = tools.centerText(top, day[today.getDay()])
 topCal.textColor = colors.foreground
 topCal.font = new Font("Futura", 12)
 topCal = tools.centerText(top, today.getDate())
-topCal.font = new Font("Futura", 40)
+topCal.font = new Font("Futura", 38)
 topCal.textColor = colors.foreground
 
 // task counter on the info section
@@ -135,15 +136,18 @@ for (var i of [0, 1, 2]) {
     } else if (i == 1) {
         image.tintColor = colors.accent
     }
-    text = countHolder.addText(" : " + taskCount[i])// 考えてからコーディングしろバカ
+    text = countHolder.addText(" : " + taskCount[i])
     text.font = new Font("Futura", 14)
     text.textColor = colors.foreground
 }
-tasks = (workings.concat(notNows.concat(overs))).sort(compare)
+tasks = notNows.sort(compare).reverse().concat(workings.concat(overs).sort(compare))
+log(taskCount)
+for (var i of tasks) {
+  log(i.title)
+}
 
 if (tasks.length <= 5) {
     for (var i = 0;i<5;i++) {
-        console.log(i)
         tasks.unshift({title: '', dueDate: null})
     }
 }
@@ -151,7 +155,7 @@ tasks = tasks.slice(tasks.length-5, tasks.length)
 
 var counter = 1
 for (var i of tasks) {
-  if (counter > 5) {
+  if (counter > 10) {
     break
   } else {
     counter++
