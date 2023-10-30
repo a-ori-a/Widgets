@@ -6,7 +6,7 @@ let list = new ListWidget()
 nextRefresh = Date.now() + 1000
 list.refreshAfterDate = new Date(nextRefresh)
 let time = new Date()// 
-time = new Date('2023/10/31 13:00')
+// time = new Date('2023/10/31 13:00')
 let day = time.getDay() // index of today's day
 let hmNow = time.getHours()*100 + time.getMinutes()
 let mmNow = minutize(hmNow)
@@ -21,9 +21,7 @@ const SatCheck = [6, 13].includes(day)
 const maxClass = SatCheck ? 3:6
 const url = "https://api.open-meteo.com/v1/jma?latitude=34.3333&longitude=134.05&hourly=weathercode&forecast_days=1"
 var weather = new Request(url)
-// forecast = await weather.readJSON()
-forecast = {"hourly":{"time":["2023-10-30T00:00","2023-10-30T01:00","2023-10-30T02:00","2023-10-30T03:00","2023-10-30T04:00","2023-10-30T05:00","2023-10-30T06:00","2023-10-30T07:00","2023-10-30T08:00","2023-10-30T09:00","2023-10-30T10:00","2023-10-30T11:00","2023-10-30T12:00","2023-10-30T13:00","2023-10-30T14:00","2023-10-30T15:00","2023-10-30T16:00","2023-10-30T17:00","2023-10-30T18:00","2023-10-30T19:00","2023-10-30T20:00","2023-10-30T21:00","2023-10-30T22:00","2023-10-30T23:00"],"weathercode":[0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,1,0,0,1,1,1,1]},"generationtime_ms":0.03993511199951172,"longitude":134.0625,"utc_offset_seconds":0,"elevation":12,"hourly_units":{"time":"iso8601","weathercode":"wmo code"},"timezone":"GMT","latitude":34.35,"timezone_abbreviation":"GMT"}
-
+forecast = await weather.loadJSON()
 const days = ["", "A月", "A火", "A水", "A木", "A金", "A土", "", "B月", "B火", "B水", "B木", "B金", "B土"]
 
 const colors = {
