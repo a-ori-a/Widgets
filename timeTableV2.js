@@ -387,6 +387,7 @@ if (data.next !== undefined) {
     classText = centralize(classInfo).addText(data.next)
 	classText.textColor = colors.foreground
 	classText.font = new Font("Arial Bold", 15)
+    classText.minimumScaleFactor = 0.1
     if (data.nextPeriod !== undefined) {
         classText = centralize(classInfo).addText(data.nextPeriod)
     	classText.textColor = colors.foreground
@@ -400,7 +401,8 @@ weatherText.textColor = colors.foreground
 weatherText.font = new Font("Futura", 10)
 weatherText = centralize(weatherInfo).addText(weatherCodes[forecast.hourly.weathercode[time.getHours()]])
 weatherText.textColor = colors.foreground
-weatherText.font = new Font("Arial", 15)
+weatherText.font = new Font("Arial Bold", 15)
+weatherText.minimumScaleFactor = 0.1
 
 
 list.presentLarge()
