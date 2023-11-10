@@ -1,40 +1,105 @@
 // Variables used by Scriptable.
 // These must be at the very top of the file. Do not edit.
 // icon-color: deep-gray; icon-glyph: calendar-plus;
-// declare variables
-let list = new ListWidget()
-nextRefresh = Date.now() + 1000
-list.refreshAfterDate = new Date(nextRefresh)
-let time = new Date()// 
-// time = new Date('2023/10/31 13:00')
-let day = time.getDay() // index of today's day
-let hmNow = time.getHours()*100 + time.getMinutes()
-let mmNow = minutize(hmNow)
-let fm = FileManager.local()
-const docPath = fm.documentsDirectory()
-const dataDir = docPath + '/schedule'
-const confPath = dataDir + '/settings'
-const timeTablePath = dataDir + '/classes'
-const fmt = new DateFormatter()
+var widget = new ListWidget()
+var fm = FileManager.local()
+const schedulePATH = fm.documentsDirectory()+"/schedule/classes"
+var today = new Date()
 const base_day = new Date('5 March 2023') // standard day for week judgement
-const SatCheck = [6, 13].includes(day)
-const maxClass = SatCheck ? 3:6
-const url = "https://api.open-meteo.com/v1/jma?latitude=34.3333&longitude=134.05&hourly=weathercode&forecast_days=1"
-var weather = new Request(url)
-forecast = await weather.loadJSON()
-const days = ["", "A月", "A火", "A水", "A木", "A金", "A土", "", "B月", "B火", "B水", "B木", "B金", "B土"]
+// today = new Date('2023/11/11 18:00')
+var classInfo
+var fore15 = [], fore12 = [], fore15b = [], fore12b = [], fore10 = [],sfore15 = [],sfore15b = [], sfore12 = [], sfore10b = [],sfore10 = [], em15 = [], futura = []
+// (maybe) better solution?
+var normal = [], em = [],ems = [], bold = [], light = [], small = [], bolds = [], lights = []
 
-const colors = {
+var stackBG = [], stackSubBG = []
+
+// let r = new Request("https://api.waifu.pics/sfw/waifu")
+// r = new Request((await r.loadJSON()).url)
+let r = new Request("https://picsum.photos/150/370")
+// let pic = await Photos.latestScreenshot()
+// pic = await r.loadImage()
+
+const info = {
+    "isSunday": today.getDay() == 0,
+    "isSaturday": today.getDay() == 6,
+    "day": today.getDay(),
+    "date": today.getDate(),
+    "month": today.getMonth()+1,
+    "dateString": (today.getMonth()+1)+"/"+today.getDate(),
+    "timeString": String(today.getHours()).padStart(2, "0")+String(today.getMinutes()).padStart(2, "0"),
+    "hours": today.getHours(),
+    "minutes": today.getMinutes(),
+    "maxClass": today.getDay() == 6 ? 4:7,
+    "week": parseInt((today.getTime() - base_day) / 86400000 % 14) > 6 ? "B": "A"
+}
+var dayNumber = info.week == "A" ? info.day:info.day+7
+const startTime = info.isSaturday ? ["0850", "0945", "1040", "1135", "1220"] : ["0850", "0945", "1040", "1150", "1300", "1355", "1450", "1535"]
+const timezone = info.isSaturday ? [' ~ 8:40','8:50 ~ 9:35','9:45 ~ 10:30','10:40 ~ 11:25','11:35 ~ 12:20','12:20 ~ '] :[' ~ 8:40','8:50 ~ 9:35','9:45 ~ 10:30','10:40 ~ 11:25','11:50 ~ 12:35','13:00 ~ 13:45','13:55 ~ 14:40','14:50 ~ 15:35','15:45 ~ ']
+
+let timeTable = [
+["", "", "", "", "", "", ""],
+["物理","現文","化学","地理","体育","コ英","数①"],
+["世A","数②","数①","地理","情報","化学","古典"],
+["コ英","体育","現文","物理","英表","数①","LHR"],
+["英表","世A","化学","コ英","古典","数①","数②"],
+["物理","情報","体育","探究","コ英","数②","数①"],
+["数学","数学","化学","化学","  ","  ","  "],
+["", "", "", "", "", "", ""],
+["物理","情報","世A","古典","体育","化学","コ英"],
+["世A","数②","英表","化学","情報","数①","地理"],
+["数②","体育","地理","現文","物理","コ英","LHR"],
+["地理","英表","コ英","古典","数②","数①","化学"],
+["物理","現文","体育","探究","コ英","数①","地理"],
+["物理","物理","国語","国語","  ","  ","  "]]
+timeTable = JSON.parse(fm.readString(schedulePATH))
+let colors = {
+    background: new Color('#fbf1c7'),
+    foreground: new Color('#504945'),
+    subBackground: new Color('#f2e5bc'),
+    subForeground: new Color('#504945'),
+    red: new Color('#9d0006'),
+    green: new Color("#79740e"),
+    yellow: new Color("#b57614"),
+    blue: new Color("#076678"),
+    purple: new Color("#8f3f71"),
+    aqua: new Color("#427b58"),
+    orange: new Color('#af3a03'),
+    gray: new Color('#928374')
+}
+
+colors = {
     background: new Color('#fdf6e3'),
     foreground: new Color('#657b83'),
     subBackground: new Color('#eee8d5'),
     subForeground: new Color('#93a1a1'),
-    accent: new Color('#268bd2'),
+    blue: new Color('#268bd2'),
     green: new Color("#859900"),
     yellow: new Color("#d79921"),
     red: new Color("#dc322f")
 }
-
+function convertDay(day) {
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]
+}
+function getClasses(dayNumber) {
+  return timeTable[dayNumber%14]
+}
+function toMinutes(string) {
+    return Number(string.slice(0,2))*60+Number(string.slice(2,4))
+}
+function isBetween(num, min, max) {
+    return min <= num && num <= max
+}
+function getClassIndex() {
+    let counter = 0
+    while (toMinutes(startTime[counter]) <= toMinutes(info.timeString)) {
+        counter ++
+        if (counter > info.maxClass) {5
+            break
+        }
+    }
+    return counter--
+}
 function centralize(stack) {
     t = stack.addStack()
     t.addSpacer()
@@ -43,366 +108,329 @@ function centralize(stack) {
     return result
 }
 
-if (!fm.fileExists(dataDir)) {
-  fm.createDirectory(dataDir)
-  let defaultTimeTable = [[],["物理","現文","化学","地理","体育","コ英","数①"],
-    ["世A","数②","数①","地理","情報","化学","古典"],
-    ["コ英","体育","現文","物理","英表","数①","LHR"],
-    ["英表","世A","化学","コ英","古典","数①","数②"],
-    ["物理","情報","体育","探究","コ英","数②","数①"],
-    ["数学","数学","化学","化学","　　","　　","　　"],
-    [],["物理","情報","世A","古典","体育","化学","コ英"],
-    ["世A","数②","英表","化学","情報","数①","地理"],
-    ["数②","体育","地理","現文","物理","コ英","LHR"],
-    ["地理","英表","コ英","古典","数②","数①","化学"],
-    ["物理","現文","体育","探究","コ英","数①","地理"],
-    ["物理","物理","国語","国語","　　","　　","　　"]]
-  let defaultConfig = {
-    "light": {
-      "bg":"#fdf6e3",
-      "lineColor":"#eee8d5",
-      "defaultText":"#586e75",
-      "title":"#2aa198",
-      "current":"#d33682",
-      "updateTime":"#93a1a1",
-      "accent":"#dc322f"
-    },
-  	"dark": {
-  		"bg": "#3c",
-  		"lineColor": "#6d6d6daf",
-  		"defaultText": "#df",
-  		"title": "#7fffd4",
-  		"current": "#23abef",
-  		"updateTime": "#df",
-  		"accent": "#848f72"
-  		},
-  	"toast": {
-  		"bg": "#fffcd4",
-  		"lineColor": "#fef787af",
-  		"defaultText": "#807e6a",
-  		"title": "#d5b77a",
-  		"current": "#6e5735",
-  		"updateTime": "#8c764a",
-  		"accent": "#cdff94"
-  		},
-  	"custom": {
-  		"bg": "#282a36",
-  		"lineColor": "#44475ab0",
-  		"defaultText": "#f8f8f2",
-  		"title": "#bd93f9",
-  		"current": "#8be9fd",
-  		"updateTime": "#50fa7b",
-  		"accent": "#6272a4"
-  		},
-  	"theme": "light",
-  	"sysColumnStart": 0.323,
-  	"sysSpacePerColumn": 0.066,
-  	"sysLineHeight": 0.03,
-  	"sysLineOffset": 0,
-  	"bg": "12abef",
-  	"lineColor": "12abef"
-  }
-  fm.writeString(timeTablePath, JSON.stringify(defaultTimeTable))
-  console.log(confPath)
-  fm.writeString(confPath, JSON.stringify(defaultConfig))
-}
-
-const Schedule = JSON.parse(fm.readString(timeTablePath))
-
-const settings = JSON.parse(fm.readString(confPath))
-const timeLength = [6,13].includes(day) ?
-  [' ~ 8:40',
-  '8:50 ~ 9:35',
-  '9:45 ~ 10:30',
-  '10:40 ~ 11:25',
-  '11:35 ~ 12:20',
-  '12:20 ~ '
-  ] :
-  [' ~ 8:40',
-  '8:50 ~ 9:35',
-  '9:45 ~ 10:30',
-  '10:40 ~ 11:25',
-  '11:50 ~ 12:35',
-  '13:00 ~ 13:45',
-  '13:55 ~ 14:40',
-  '14:50 ~ 15:35',
-  '15:45 ~ '
-  ]
-settings.theme = settings[settings.theme]
-
-let TimeSplit = SatCheck ? [850, 945, 1040, 1135, 1220] : [850, 945, 1040, 1150, 1300, 1355, 1450, 1545]  // reversed timestamp of classes
-let TimeSplitMinutes = SatCheck ? [530, 585, 640, 695, 750] : [530,585,640,710,780,835,890,945]
-
-if (hmNow < 850) {
-  var classIndex = -1
-} else {
-  for (var i of TimeSplit.slice().reverse()) {
-    if (hmNow >= i) {
-      var classIndex = TimeSplit.indexOf(i)  // number of classes before the current class
-      break
-    }
-  }
-}
-
-// basic settings
-fmt.dateFormat = 'M/d (eee) HH:mm:ss'
-
-if (parseInt((time.getTime() - base_day) / 86400000 % 14) > 6){
-  day += 7
-}
-
-const data = {
-  'isAfterSchool' : classIndex > maxClass,
-  'isBeforeSchool' : hmNow < 850,
-  'isSunday' : [0, 7].includes(day),
-  'week' : [1,2,3,4,5,6,7].includes(day) ? 'A':'B', // if day < 6, set A else B (when week is B, day ranges from 7~13) (Sunday is0 or 7, and we should reagard Sunday as next week to see Monday's class)
-  'now' : hmNow < 850 ? '始業前' : hmNow >= TimeSplit[maxClass+1] ? '放課後' : Schedule[day][classIndex],
-  'next' : classIndex == maxClass ? '放課後' : classIndex > maxClass ? /*'Today\'s class has ended''今日の授業は終了しました'*/'' : Schedule[day][classIndex + 1],
-  'period' : timeLength[classIndex+1],
-  'nextPeriod' : timeLength[classIndex+2],
-  'isRestTime' : [2,3].includes(classIndex) ? 45 < mmNow - TimeSplitMinutes[classIndex] && mmNow - TimeSplitMinutes[classIndex] < 70 : 45 < mmNow - TimeSplitMinutes[classIndex] && mmNow - TimeSplitMinutes[classIndex] < 55,
-}
-// modify data object using its property
-{
-  data.isAtSchool = !(data.isAfterSchool || data.isBeforeSchool)
-  data.minutesLeft = data.isRestTime ? TimeSplitMinutes[classIndex+1] - mmNow : TimeSplitMinutes[classIndex] - mmNow + 45
-  if (classIndex > maxClass || data.isSunday) {
-    day = (day+1)%7
-  }
-}
-
-// define functions
-function minutize(n) {
-  n = String(n)
-  return 60 * (n.length == 3 ? n[0]:n.slice(0,2)) + Number(n.slice(-2))
-}
-
-async function registerTimeTable() {
-  let alert = new Alert()
-  alert.title = "時間割をコピーしていますか"
-  alert.addAction("Yes")
-  alert.addAction("No")
-  var isNotCopied = await alert.presentAlert()
-  if (isNotCopied) {
-    Safari.open("https://a-ori-a.github.io/class-schedule-editor/")
-  }
-  alert = new Alert()
-  alert.title = "コピーした時間割を下にペーストしてください"
-  alert.addTextField()
-  alert.addAction('OK')
-  await alert.presentAlert()
-  let newTimeTable = alert.textFieldValue(0)
-  let validFlag = true
-  try {
-    JSON.parse(newTimeTable)
-  } catch (e) {
-    validFlag = false
-    alert = new Alert()
-    alert.title = 'Error'
-    alert.message = 'Invalid time table'
-    alert.addAction('OK')
-    alert.presentAlert()
-  }
-  if (validFlag) {
-    fm.writeString(timeTablePath, newTimeTable)
-    alert = new Alert()
-    alert.message = 'New timetable registered'
-    alert.addAction('OK')
-    alert.presentAlert()
-  }
-}
-
-async function changeConfig() {
-  let newConfig = JSON.parse(fm.readString(confPath)) // this is old config which gonna be a new config
-  let alert = new Alert()
-  alert.title = '変更する設定を選択してください'
-  let elements = Object.keys(settings)
-  elements = ['カラーテーマの変更', 'カスタムテーマの設定', '横線の位置の変更']
-  for (let i of elements) {
-    alert.addAction(i)
-  }
-  let configToChange = await alert.presentAlert()
-  switch (configToChange) {
-    case 0: // color scheme
-      alert = new Alert()
-      alert.title = 'どのカラーテーマにしますか(default: custom)'
-      for (let i of ['light', 'dark', 'toast', 'custom']) {
-        alert.addAction(i)
-      }
-      let newTheme = await alert.present()
-      newConfig.theme = ['light', 'dark', 'toast', 'custom'][newTheme]
-      alert = new Alert()
-      alert.title = 'カラーテーマが'+newConfig.theme+'に変更されました'
-      alert.addCancelAction('OK')
-      alert.presentAlert()
-      break
-    case 1:
-    	alert = new Alert()
-      for (let i of ['背景色','線の色','教科の文字の色', '「時間割」の色', '現在の授業の色', '更新時刻、曜日の色', '小さめのウィジェットでのアクセントカラー']) {
-        alert.addAction(i)
-      }
-      alert.title = '色を変更する項目を選択してください'
-      alert.addCancelAction('Cancel')
-      let newProperty = await alert.presentAlert()
-      if (newProperty != -1) {
-        alert = new Alert()
-        alert.title = '色のカラーコードを入力して下さい。#はあってもなくても構いません。カラーコードが正しいかの確認は取っていないのでうまく行かなかったら入力し直して見て下さい。'
-        alert.addTextField()
-        alert.addCancelAction('Cancel')
-        alert.addAction('OK')
-        let newColor = await alert.presentAlert()
-        newConfig.custom[(['bg','lineColor','defaultText', 'title', 'current', 'updateTime', 'accent'][newProperty])] = alert.textFieldValue(0)
-      }
-    	break
-    case 2:
-      console.log('horizontal line')
-      break
-  }
-  fm.writeString(confPath ,JSON.stringify(newConfig))
-}
-
-async function showAvailability() {
-  let alert = new Alert()
-  alert.title = '対応状況'
-  alert.message = '基本的に無印のiPadのみに対応しています。iPad ProやiPad Airなどでは画面サイズが違うため表示が崩れる可能性が高いです。今後もProやAirに対応する予定はないので適宜追加して下さい。'
-  alert.addAction('OK')
-  await alert.presentAlert()
-}
-
-weatherCodes = {
-  "0": "Sunny",
-  "1": "Sunny",
-  "2": "Cloudy",
-  "3": "Cloudy",
-  "45": "Foggy",
-  "48": "Foggy",
-  "51": "Drizzle",
-  "53": "Drizzle",
-  "55": "Drizzle",
-  "56": "Drizzle",
-  "57": "Drizzle",
-  "61": "Rain",
-  "63": "Rain",
-  "65": "Rain",
-  "66": "Rain",
-  "67": "Rain",
-  "71": "Snow",
-  "73": "Snow",
-  "75": "Snow",
-  "77": "Snow",
-  "80": "Showers",
-  "81": "Showers",
-  "82": "Showers",
-  "85": "Snow Showers",
-  "86": "Snow Showers",
-  "95": "Thunderstorm",
-  "96": "Thunderstorm with Hail",
-  "99": "Thunderstorm with Hail",
-}
-
-list.backgroundColor = colors.background
-body = list.addStack()
-left = body.addStack()
-right = body.addStack()
-left.layoutVertically()
-right.layoutVertically()
-right.setPadding(0, 15, 0, 0)  // top leading bottom trailing
-left.setPadding(0, 17, 0, 0)
-title = left.addStack()
-battery = left.addStack()
-dayProgress = left.addStack()
-left.addSpacer(7)
-//volume = left.addStack()
-table = left.addStack()
-classInfo = right.addStack()
-classInfo.spacing = 5
-weatherInfo = right.addStack()
-dayCount = right.addStack()
-right.spacing = 10
-left.spacing = 3
-side = 90
-body.size = new Size(320, 320)
-left.size = new Size(200, 320)
-right.size = new Size(120, 320)
-
-// title.size = new Size(180, 60)
-battery.size = new Size(180, 12)
-dayProgress.size = new Size(180, 12)
-//volume.size = new Size(180, 12)
-table.size = new Size(180, 244)
-table.layoutVertically()
-table.spacing = 8
-classInfo.size = new Size(side, side)
-weatherInfo.size = new Size(side, side)
-weatherInfo.spacing = 10
-dayCount.size = new Size(side, side)
-for (var i of [title, battery, dayProgress, classInfo, table, weatherInfo, dayCount]) {
-    i.cornerRadius = 10
-    i.backgroundColor = colors.subBackground
-    i.layoutVertically()
-}
-battery.backgroundColor = colors.subBackground
-classInfo.backgroundColor = colors.subBackground
-table.backgroundColor = colors.subBackground
-weatherInfo.backgroundColor = colors.subBackground
-dayCount.backgroundColor = colors.subBackground
-
-g = new LinearGradient()
-g.colors = [colors.green, colors.green, colors.subBackground, colors.subBackground]
-g.locations = [0, Device.batteryLevel(), Device.batteryLevel(), 1]
-g.startPoint = new Point(0, 1)
-g.endPoint = new Point(1, 0)
-battery.backgroundGradient = g
-g = new LinearGradient()
-g.colors = [colors.yellow, colors.yellow, colors.subBackground, colors.subBackground]
-g.locations = [0, (time.getHours()*3600+60*time.getMinutes()+time.getSeconds())/ (3600*24), (time.getHours()*3600+60*time.getMinutes()+time.getSeconds())/ (3600*24), 1]
-g.startPoint = new Point(0, 1)
-g.endPoint = new Point(1, 0)
-dayProgress.backgroundGradient= g
-// log((time.getHours()*3600+60*time.getMinutes()+time.getSeconds())/ (3600*24))
-
-text = centralize(table).addText("Week "+(data.isSunday ? data.week == "A"? "B":"A" :data.week))
-text.textColor = colors.foreground
-text.font = new Font("Futura", 13)
-
-for (var i of Schedule[day]) {
-    subject = table.addStack()
-    subject.addSpacer()
-    text = subject.addText(i)
-    subject.addSpacer()
-    if (i == data.now) {
-        text.textColor = colors.accent
-    } else if (classIndex > maxClass || data.isSunday) {
-        text.textColor = colors.subForeground
+function applyFont(group, font, size, color) {
+    if (font == "default") {
+        for (var i of group) {
+            i.font = Font.regularMonospacedSystemFont(size)
+            i.textColor = color
+            i.minimumScaleFactor = 0.1
+            i.lineLimit = 1
+        }
+    } else if (font == "bold") {
+        for (var i of group) {
+            i.font = Font.boldMonospacedSystemFont(size)
+            i.textColor = color
+            i.minimumScaleFactor = 0.1
+            i.lineLimit = 1
+        }
     } else {
-        text.textColor = colors.foreground
+        for (var i of group) {
+            i.font = new Font(font, size)
+            i.textColor = color
+            i.minimumScaleFactor = 0.1
+            i.lineLimit = 1
+        }
+    }
+}
+function applyBG(group, color) {
+    for (var i of group) {
+        i.backgroundColor =  color
+    }
+}
+function findNext(subject = undefined) {
+    if (subject === undefined) {
+        subject = classInfo.now
+    }
+    let tmp = dayNumber
+    while (true) {
+        tmp += 1
+        if (timeTable[tmp%14].includes(subject)) {
+            break
+        } else if (tmp>=dayNumber+14) {
+            return [0,0]
+        }
+    }
+    let point = new Date()
+    point.setDate(point.getDate() + (tmp-dayNumber))
+    return [tmp-dayNumber, point, timeTable[tmp%14].indexOf(subject)+1]
+}
+function counters(num) {
+    if (0+num == 1) {
+        return num + "st"
+    } else if (0+num == 2) {
+        return num + "nd"
+    } else if (0+num == 3) {
+        return num + "rd"
+    } else {
+        return num + "th"
+    }
+}
+function print(string) {
+    let a = new Alert()
+    a.message = ""+string
+    a.present()
+}
+
+if (!info.isSunday) {
+    let classIndex = getClassIndex()
+    let isBeforeSchool = classIndex == 0
+    let isAfterSchool = classIndex == info.maxClass+1
+    let isLastClass = classIndex == info.maxClass
+    var classInfo = {
+        "classes": getClasses(dayNumber),
+        "classIndex": classIndex,
+        "isBeforeSchool":  isBeforeSchool,
+        "isAfterSchool": isAfterSchool,
+        "now": isBeforeSchool ? "始業前": isAfterSchool ? "放課後" : timeTable[dayNumber][classIndex-1],
+        "next": isAfterSchool ? "" : isLastClass ? "放課後" : timeTable[dayNumber][classIndex],
+        "zone": timezone[classIndex],
+        "nextZone": isAfterSchool ? timezone[classIndex] : timezone[classIndex+1]
+    }
+} else {
+    var classInfo = {
+        "classes": [],
+        "classIndex": "",
+        "isBeforeSchool": false,
+        "isAfterSchool": true,
+        "now": "",
+        "next": "",
+        "zone": "",
+        "nextZone": "",
     }
 }
 
+components = {
+    "now" : (stack) => {
+        sfore10.push(centralize(stack).addText("Now"))
+        fore15b.push(centralize(stack).addText(classInfo.now))
+        sfore10.push(centralize(stack).addText(classInfo.zone))
+    },
+    "next" : (stack) => {
+        sfore10.push(centralize(stack).addText("Next"))
+        fore15b.push(centralize(stack).addText(classInfo.next))
+        sfore10.push(centralize(stack).addText(classInfo.nextZone))
+    },
+    "table" : (stack) => {
+        if (info.isSunday) {
+            for (var i of getClasses(dayNumber+1)) {
+                fore15.push(centralize(stack).addText(i))
+            }
+        } else if (classInfo.isAfterSchool && stack.size.width >= 130) {
+            var line = stack.addStack()
+            ems.push(line.addText("Today"))
+            line.addSpacer()
+            ems.push(line.addText(info.isSaturday? "Monday":"Tomorrow"))
+            stack.addSpacer(8)
+            for (var i=0;i<7;i++) {
+                var line = stack.addStack()
+                light.push(line.addText(classInfo.classes[i]))
+                line.addSpacer()
+                light.push(line.addText(getClasses(dayNumber + 1 + Number(info.isSaturday))[i]))
+            }
+            for (var i=0; i<7;i++) {
+                try {
+                    lights.push(centralize(leftClass).addText(classInfo.classes[i]))
+                } catch {}
+                try {
+                    lights.push(centralize(rightClass).addText(getClasses(dayNumber+1+Number(info.isSaturday))[i]))
+                } catch {}
+            }
+        }else if (classInfo.isAfterSchool) {
+            ems.push(centralize(stack).addText(info.isSaturday?"Monday":"Tomorrow"))
+            stack.addSpacer(8)
+            for (var i=0;i<7;i++) {
+                light.push(centralize(stack).addText(getClasses(dayNumber+1+Number(info.isSaturday))[i]))
+            }
+        }else {  // not Sunday
+            futura.push(centralize(stack).addText("Week "+info.week))
+            stack.addSpacer(3)
+            let counter = 0
+            for (var i of classInfo.classes) {
+                if (i == classInfo.now) {
+                    em15.push(centralize(stack).addText(i))
+                } else {
+                    fore15.push(centralize(stack).addText(i))
+                }
+            }
+        }
+    },
+    "battery": (stack) => {
+        let gradient = new LinearGradient()
+        gradient.colors = [colors.green, colors.green, colors.subBackground, colors.subBackground]
+        gradient.locations = [0, Device.batteryLevel(), Device.batteryLevel(), 1]
+        gradient.startPoint = new Point(0, 0)
+        gradient.endPoint = new Point(1, 0)
+        stack.backgroundGradient = gradient
+    },
+    "dayProgress": (stack) => {
+        let gradient = new LinearGradient()
+        gradient.colors = [colors.yellow, colors.yellow, colors.subBackground, colors.subBackground]
+        gradient.locations = [0, (today.getHours()*3600+60*today.getMinutes()+today.getSeconds())/ (3600*24), (today.getHours()*3600+60*today.getMinutes()+today.getSeconds())/ (3600*24), 1]
+        gradient.startPoint = new Point(0, 0)
+        gradient.endPoint = new Point(1, 0)
+        stack.backgroundGradient = gradient
+    },
+    "pic": async (stack) => {
+        let url = `https://picsum.photos/${stack.size.width*4}/${stack.size.height*4}`
+        let re = new Request(url)
+        let pic = await re.loadImage()
+        stack.layoutHorizontally()
+        let a = (centralize(stack)).addImage(pic)
+        a.imageSize = stack.size
+    },
+    "again": (stack) => {
+        let nextInfo = findNext(classInfo.now)
+        if (nextInfo[0] != 0) {
+            arrow = SFSymbol.named("return.right")
+            arrow.applyFont(new Font("Arial Bold", 13))
+            image = centralize(stack).addImage(arrow.image)
+            image.tintColor = colors.subForeground
+            image.resizable = false
+            bold.push(centralize(stack).addText( (nextInfo[1].getMonth()+1)+"/"+nextInfo[1].getDate()))
+            bolds.push(centralize(stack).addText(counters(nextInfo[2])))
+        }
+    },
+    "weather": async (stack) => {
+        let weatherCodes = {
+            "0": "Sunny","1": "Sunny","2": "Cloudy","3": "Cloudy","45": "Foggy","48": "Foggy","51": "Drizzle","53": "Drizzle","55": "Drizzle","56": "Drizzle","57": "Drizzle","61": "Rain","63": "Rain","65": "Rain","66": "Rain","67": "Rain","71": "Snow","73": "Snow","75": "Snow","77": "Snow","80": "Showers","81": "Showers","82": "Showers","85": "Snow Showers","86": "Snow Showers","95": "Thunderstorm","96": "Thunderstorm with Hail","99": "Thunderstorm with Hail",}
+        let url = "https://api.open-meteo.com/v1/jma?latitude=34.3333&longitude=134.05&hourly=weathercode&forecast_days=1"
+        let weather = new Request(url)
+        try {
+            let forecast = await weather.loadJSON()
+            lights.push(centralize(stack).addText("Weather"))
+            stack.addSpacer(5)
+            let time = new Date()
+            bold.push(centralize(stack).addText(weatherCodes[forecast.hourly.weathercode[time.getHours()]]))
+        } catch {
+            lights.push(centralize(stack).addText("Weather"))
+            stack.addSpacer(5)
+            let wifi = SFSymbol.named("wifi.slash")
+            wifi.applyFont(new Font("Arial", 30))
+            let image = centralize(stack).addImage(wifi.image)
+            image.tintColor = colors.red
+            image.resizable = false
+        }
 
-classText = centralize(classInfo).addText("Next Class")
-classText.textColor = colors.foreground
-classText.font = new Font("Arial", 10)
-if (data.next !== undefined) {
-    classText = centralize(classInfo).addText(data.next)
-	classText.textColor = colors.foreground
-	classText.font = new Font("Arial Bold", 15)
-    classText.minimumScaleFactor = 0.1
-    if (data.nextPeriod !== undefined) {
-        classText = centralize(classInfo).addText(data.nextPeriod)
-    	classText.textColor = colors.foreground
-    	classText.font = new Font("Arial", 10)
-	}
+    },
+    "waifu": async (stack) => {
+        let url = "https://api.waifu.im/search?included_tags=waifu"
+        let r = new Request(url)
+        let imurl = new Request((await r.loadJSON()).images[0].url)
+        im = await imurl.loadImage()
+        let image = stack.addImage(im)
+        image.size = stack.size
+    }
 }
 
-// title.addText("BAT : "+Math.floor(Device.batteryLevel()*100)+"%")
-weatherText = centralize(weatherInfo).addText("Weather")
-weatherText.textColor = colors.foreground
-weatherText.font = new Font("Futura", 10)
-weatherText = centralize(weatherInfo).addText(weatherCodes[forecast.hourly.weathercode[time.getHours()]])
-weatherText.textColor = colors.foreground
-weatherText.font = new Font("Arial Bold", 15)
-weatherText.minimumScaleFactor = 0.1
+// build widget
+var body = widget.addStack()
+var left = body.addStack()
+var right = body.addStack()
+var topBar1 = left.addStack()
+var topBar2 = left.addStack()
+var mainCover = left.addStack()
+var main = mainCover.addStack()
+var some = mainCover.addStack()
+var bottom = left.addStack()
+var sub1 = right.addStack()
+var sub2 = right.addStack()
+var sub3 = right.addStack()
+var sub4 = right.addStack()
+mainCover.spacing = 5
+some.layoutVertically()
+some.cornerRadius = 15
+some.size = new Size(75, 185)
+some.backgroundColor = colors.subBackground
 
+// set style
+{  // body
+    body.size = new Size(320, 320)
+    body.spacing = 0
+    body.setPadding(0, 0, 0, 0)
+}
+{  // left
+    left.size = new Size(230, 320)
+    left.layoutVertically()
+    left.spacing = 6
+    left.setPadding(3, 8, 0, 0)
+}
+{  // right
+    right.size = new Size(90, 320)
+    right.layoutVertically()
+    right.spacing = 4
+    right.setPadding(0, 0, 0, 0)
+}
+{  // bar
+    stackSubBG.push(topBar1)
+    stackSubBG.push(topBar2)
+    topBar1.size = new Size(210, 12)
+    topBar2.size = new Size(210, 12)
+    topBar1.cornerRadius = topBar2.cornerRadius = 6
+}
+{  // 4 square area
+    let width = 80, height = 73
+    stackSubBG.push(sub1)
+    stackSubBG.push(sub2)
+    stackSubBG.push(sub3)
+    stackSubBG.push(sub4)
+    sub1.layoutVertically()
+    sub2.layoutVertically()
+    sub3.layoutVertically()
+    sub4.layoutVertically()
+    sub1.size = sub2.size = sub3.size = sub4.size = new Size(width, height)
+    sub1.cornerRadius = sub2.cornerRadius = sub3.cornerRadius = sub4.cornerRadius =15
+}
+{  // main & bottom
+    stackSubBG.push(main)
+    stackSubBG.push(bottom)
+    main.layoutVertically()
+    bottom.layoutVertically()
+    main.size = new Size(130, 185)
+    bottom.size = new Size(210, 75)
+    main.cornerRadius = 15
+    bottom.cornerRadius = 15
+    main.setPadding(0, 10, 0, 10)
+}
 
-list.presentLarge()
+// construct widget
+const stacks = [main, some, sub1, sub2, sub3, sub4, bottom]
+if (config.runsInWidget) {
+    if (args.widgetParameter !== null) {
+        let parameter = args.widgetParameter
+        parameter = parameter.split(",")
+        for (var i in parameter) {
+            await components[parameter[i].trim()](stacks[i])
+        }
+    }
+} else {
+    components.table(main)
+    await components.pic(some)
+    components.now(sub1)
+    components.next(sub2)
+    components.again(sub3)
+    await components.weather(sub4)
+}
+
+stackBG.push(widget)
+components.battery(topBar1)
+components.dayProgress(topBar2)
+applyFont(fore15, "default", 15, colors.foreground)
+applyFont(fore10, "default", 10, colors.foreground)
+applyFont(sfore10, "default", 10, colors.subForeground)
+applyFont(fore15b, "bold", 15, colors.foreground)
+applyFont(em15, "bold", 15, colors.blue)
+
+applyFont(small, "default", 10, colors.foreground)
+applyFont(bold, "bold", 15, colors.foreground)
+applyFont(bolds, "bold", 10, colors.subForeground)
+applyFont(ems, "bold", 10, colors.blue)// 
+applyFont(em, "bold", 10, colors.blue)
+applyFont(normal, "default", 15, colors.foreground)
+applyFont(lights, "default", 10, colors.subForeground)
+applyFont(light, "default", 15, colors.subForeground)
+applyFont(futura, "Futura", 15, colors.foreground)
+
+applyBG(stackBG, colors.background)
+applyBG(stackSubBG, colors.subBackground)
+widget.presentLarge()
+Script.setWidget(widget)
