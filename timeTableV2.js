@@ -165,6 +165,10 @@ function counters(num) {
         return num + "th"
     }
 }
+function dateMod(start, end, time=false) {
+    
+}
+log(dateMod(new Date(), new Date()))
 function print(string) {
     let a = new Alert()
     a.message = ""+string
@@ -206,9 +210,17 @@ components = {
         sfore10.push(centralize(stack).addText(classInfo.zone))
     },
     "next" : (stack) => {
-        sfore10.push(centralize(stack).addText("Next"))
-        fore15b.push(centralize(stack).addText(classInfo.next))
-        sfore10.push(centralize(stack).addText(classInfo.nextZone))
+        if (classInfo.isAfterSchool) {
+            let house = SFSymbol.named("house.fill")
+            house.applyFont(new Font("Arial Bold", 25))
+            let image = centralize(stack).addImage(house.image)
+            image.tintColor = colors.foreground
+            image.resizable = false
+        } else {
+            sfore10.push(centralize(stack).addText("Next"))
+            fore15b.push(centralize(stack).addText(classInfo.next))
+            sfore10.push(centralize(stack).addText(classInfo.nextZone))
+        }
     },
     "table" : (stack) => {
         if (info.isSunday) {
@@ -288,6 +300,12 @@ components = {
             image.resizable = false
             bold.push(centralize(stack).addText( (nextInfo[1].getMonth()+1)+"/"+nextInfo[1].getDate()))
             bolds.push(centralize(stack).addText(counters(nextInfo[2])))
+        } else {
+            let house = SFSymbol.named("house.fill")
+            house.applyFont(new Font("Arial Bold", 25))
+            let image = centralize(stack).addImage(house.image)
+            image.tintColor = colors.foreground
+            image.resizable = false
         }
     },
     "weather": async (stack) => {
@@ -319,6 +337,36 @@ components = {
         im = await imurl.loadImage()
         let image = stack.addImage(im)
         image.size = stack.size
+    },
+    "calendar": async (stack) => {
+        let cal =  await Calendar.forEvents()
+        let events = await CalendarEvent.today(cal)
+        for (var i of events) {
+            let start = i.startDate
+            let end = i.endDate
+            if (stack.size.width > 80) {
+                let eventHolder = centralize(stack)
+                if (i.isAllDay) {
+                    normal.push(eventHolder.addText(i.title))
+                    eventHolder.addSpacer()
+                    normal.push(eventHolder.addText("Today"))
+                } else {
+                    normal.push(eventHolder.addText(i.title))
+                    eventHolder.addSpacer()
+                    normal.push(eventHolder.addText(`${start.toLocaleTimeString().split(":").slice(0,2).join(":")}`))
+                }
+            } else {
+                if (i.isAllDay) {
+                    normal.push(centralize(stack).addText(i.title))
+                    lights.push(centralize(stack).addText("Today"))
+                    stack.addSpacer(5)
+                } else {
+                    normal.push(centralize(stack).addText(i.title))
+                    lights.push(centralize(stack).addText(`${start.toLocaleTimeString().split(":").slice(0,2).join(":")}`))
+                    stack.addSpacer(5)
+                }
+            }
+        }
     }
 }
 
@@ -404,11 +452,12 @@ if (config.runsInWidget) {
     }
 } else {
     components.table(main)
-    await components.pic(some)
+//     await components.pic(some)
     components.now(sub1)
     components.next(sub2)
     components.again(sub3)
-    await components.weather(sub4)
+    await components.calendar(bottom)
+//     await components.weather(sub4)
 }
 
 stackBG.push(widget)
